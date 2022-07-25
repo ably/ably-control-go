@@ -22,13 +22,13 @@ func (c *Client) Keys(appID string) ([]Key, error) {
 	return keys, err
 }
 
-func (c *Client) CreateKey(appID string, key NewKey) (Key, error) {
+func (c *Client) CreateKey(appID string, key *NewKey) (Key, error) {
 	var out Key
 	err := c.request("POST", "/apps/"+appID+"/keys", &key, &out)
 	return out, err
 }
 
-func (c *Client) UpdateKey(appID, keyID string, key NewKey) (Key, error) {
+func (c *Client) UpdateKey(appID, keyID string, key *NewKey) (Key, error) {
 	var out Key
 	err := c.request("PATCH", "/apps/"+appID+"/keys/"+keyID, &key, &out)
 	return out, err

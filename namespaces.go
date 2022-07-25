@@ -16,15 +16,19 @@ func (c *Client) Namespaces(appID string) ([]Namespace, error) {
 	return namespaces, err
 }
 
-func (c *Client) CreateNamespace(appID string, namespace Namespace) (Namespace, error) {
+func (c *Client) CreateNamespace(appID string, namespace *Namespace) (Namespace, error) {
 	var out Namespace
 	err := c.request("POST", "/apps/"+appID+"/namespaces", &namespace, &out)
 	return out, err
 }
 
-func (c *Client) UpdateNamespace(appID, namespaceID string, namespace Namespace) (Namespace, error) {
+func (c *Client) UpdateNamespace(appID string, namespace *Namespace) (Namespace, error) {
+	in := *namespace
+	id := in.ID
+	in.ID = ""
+
 	var out Namespace
-	err := c.request("PATCH", "/apps/"+appID+"/namespaces/"+namespaceID, &namespace, &out)
+	err := c.request("PATCH", "/apps/"+appID+"/namespaces/"+id, &in, &out)
 	return out, err
 }
 
