@@ -23,7 +23,7 @@ func NewClient(token string) (Client, Me, error) {
 func NewClientWithURL(token, url string) (Client, Me, error) {
 	client := Client{
 		token: token,
-		Url:   API_URL,
+		Url:   url,
 	}
 	me, err := client.Me()
 	if err != nil {
