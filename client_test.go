@@ -11,6 +11,7 @@ import (
 )
 
 var token string
+var url string = API_URL
 var apps []string
 
 func TestMain(m *testing.M) {
@@ -21,8 +22,12 @@ func TestMain(m *testing.M) {
 		panic("ABLY_ACCOUNT_TOKEN not set")
 	}
 
+	if os.Getenv("ABLY_CONTROL_URL") != "" {
+		url = os.Getenv("ABLY_CONTROL_URL")
+	}
+
 	// Attempt to clean up apps if anything went wrong
-	client, _, err := NewClient(token)
+	client, _, err := NewClientWithURL(token, url)
 	if err == nil {
 		for _, v := range apps {
 			_ = client.DeleteApp(v)
@@ -55,7 +60,7 @@ func newTestApp(t *testing.T, client *Client) App {
 }
 
 func newTestClient(t *testing.T) (Client, Me) {
-	client, me, err := NewClient(token)
+	client, me, err := NewClientWithURL(token, url)
 	assert.NoError(t, err)
 	return client, me
 
