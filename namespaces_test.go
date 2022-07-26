@@ -11,7 +11,6 @@ import (
 func TestNamespaces(t *testing.T) {
 	client, _ := newTestClient(t)
 	app := newTestApp(t, &client)
-	defer client.DeleteApp(app.ID)
 
 	name := "test-namespace-" + fmt.Sprint(rand.Uint64())
 

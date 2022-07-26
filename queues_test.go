@@ -11,7 +11,6 @@ import (
 func TestQueues(t *testing.T) {
 	client, _ := newTestClient(t)
 	app := newTestApp(t, &client)
-	defer client.DeleteApp(app.ID)
 
 	name := "queue-key-" + fmt.Sprint(rand.Uint64())
 

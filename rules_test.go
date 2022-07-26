@@ -9,7 +9,6 @@ import (
 func TestRules(t *testing.T) {
 	client, _ := newTestClient(t)
 	app := newTestApp(t, &client)
-	defer client.DeleteApp(app.ID)
 
 	target := &HttpTarget{
 		Url:       "http://test.com",

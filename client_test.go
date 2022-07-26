@@ -11,6 +11,7 @@ import (
 )
 
 var token string
+var apps []string
 
 func TestMain(m *testing.M) {
 	token = os.Getenv("ABLY_ACCOUNT_TOKEN")
@@ -18,6 +19,14 @@ func TestMain(m *testing.M) {
 
 	if token == "" {
 		panic("ABLY_ACCOUNT_TOKEN not set")
+	}
+
+	// Attempt to clean up apps if anything went wrong
+	client, _, err := NewClient(token)
+	if err == nil {
+		for _, v := range apps {
+			_ = client.DeleteApp(v)
+		}
 	}
 
 	code := m.Run()
@@ -40,6 +49,7 @@ func newTestApp(t *testing.T, client *Client) App {
 	app, err := client.CreateApp(&app)
 
 	assert.NoError(t, err)
+	apps = append(apps, app.ID)
 
 	return app
 }

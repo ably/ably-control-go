@@ -11,7 +11,6 @@ func TestApp(t *testing.T) {
 
 	apps, err := client.Apps()
 	assert.NoError(t, err)
-	defer client.DeleteApp(app.ID)
 
 	assert.NotEqual(t, len(apps), 0)
 
