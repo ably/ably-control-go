@@ -11,6 +11,7 @@ import (
 func TestKeys(t *testing.T) {
 	client, _ := newTestClient(t)
 	app := newTestApp(t, &client)
+	defer client.DeleteApp(app.ID)
 
 	name := "test-key-" + fmt.Sprint(rand.Uint64())
 
@@ -45,5 +46,8 @@ func TestKeys(t *testing.T) {
 	assert.Equal(t, key.Capability, k.Capability)
 
 	err = client.RevokeKey(app.ID, k.ID)
+	assert.NoError(t, err)
+
+	err = client.DeleteApp(app.ID)
 	assert.NoError(t, err)
 }

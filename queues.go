@@ -35,7 +35,7 @@ type Queue struct {
 	Stats        Stats    `json:"stats"`
 	Ttl          int      `json:"ttl"`
 	MaxLength    int      `json:"maxLength"`
-	DeadLetter   int      `json:"deadLetter"`
+	DeadLetter   bool     `json:"deadLetter"`
 	DeadLetterID string   `json:"deadLetterId,omitempty"`
 }
 
@@ -52,15 +52,9 @@ func (c *Client) Queues(appID string) ([]Queue, error) {
 	return queues, err
 }
 
-func (c *Client) CreateQueue(appID string, queue NewQueue) (Queue, error) {
+func (c *Client) CreateQueue(appID string, queue *NewQueue) (Queue, error) {
 	var out Queue
 	err := c.request("POST", "/apps/"+appID+"/queues", &queue, &out)
-	return out, err
-}
-
-func (c *Client) UpdateQueue(appID, queueID string, queue NewQueue) (Queue, error) {
-	var out Queue
-	err := c.request("PATCH", "/apps/"+appID+"/queues/"+queueID, &queue, &out)
 	return out, err
 }
 
