@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+type NewRuleNoJson NewRule
+
 type Rule struct {
 	ID          string `json:"id,omitempty"`
 	AppID       string `json:"appId,omitempty"`
@@ -133,7 +135,7 @@ type Header struct {
 
 type rawNewRule struct {
 	RuleType string `json:"ruleType,omitempty"`
-	*NewRule
+	*NewRuleNoJson
 }
 
 type NewRule struct {
@@ -145,7 +147,7 @@ type NewRule struct {
 
 func (r *NewRule) MarshalJSON() ([]byte, error) {
 	raw := rawNewRule{
-		RuleType: r.Target.TargetType(), NewRule: r}
+		RuleType: r.Target.TargetType(), NewRuleNoJson: (*NewRuleNoJson)(r)}
 
 	return json.Marshal(&raw)
 }
@@ -407,13 +409,13 @@ func (c *Client) Rule(appID, ruleID string) (Rule, error) {
 	return rule, err
 }
 
-func (c *Client) CreateRule(appID string, rule NewRule) (Rule, error) {
+func (c *Client) CreateRule(appID string, rule *NewRule) (Rule, error) {
 	var out Rule
 	err := c.request("POST", "/apps/"+appID+"/rules", &rule, &out)
 	return out, err
 }
 
-func (c *Client) UpdateRule(appID, ruleID string, rule NewRule) (Rule, error) {
+func (c *Client) UpdateRule(appID, ruleID string, rule *NewRule) (Rule, error) {
 	var out Rule
 	err := c.request("PATCH", "/apps/"+appID+"/rules/"+ruleID, &rule, &out)
 	return out, err
