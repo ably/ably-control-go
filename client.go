@@ -3,7 +3,6 @@ package control
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -57,7 +56,18 @@ func (c *Client) request(method, path string, in, out interface{}) error {
 	defer res.Body.Close()
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		body, _ := io.ReadAll(res.Body)
-		return fmt.Errorf("unexpected HTTP status: %s: %s", res.Status, body)
+		var errorInfo ErrorInfo
+		err = json.Unmarshal(body, &errorInfo)
+		if err == nil {
+			return errorInfo
+		} else {
+			return ErrorInfo{
+				Message:    string(body),
+				Code:       0,
+				StatusCode: res.StatusCode,
+				HRef:       "",
+			}
+		}
 	}
 	if out != nil {
 		return json.NewDecoder(res.Body).Decode(out)
