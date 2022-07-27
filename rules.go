@@ -250,7 +250,7 @@ type PulsarTarget struct {
 }
 
 func (s *PulsarTarget) TargetType() string {
-	return "pular"
+	return "pulsar"
 }
 
 type KafkaTarget struct {
@@ -359,7 +359,6 @@ type HttpCloudfareWorkerTarget struct {
 	Url          string   `json:"url,omitempty"`
 	Headers      []Header `json:"headers,omitempty"`
 	SigningKeyID string   `json:"signingKeyId,omitempty"`
-	Enveloped    bool     `json:"enveloped"`
 }
 
 func (s *HttpCloudfareWorkerTarget) TargetType() string {
