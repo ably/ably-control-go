@@ -17,7 +17,7 @@ func TestRulePulsar(t *testing.T) {
 			Token:              "1234",
 		},
 		Enveloped: true,
-		Format:    "json",
+		Format:    Json,
 	}
 
 	testRule(t, target)
@@ -29,13 +29,13 @@ func TestRuleKafka(t *testing.T) {
 		Brokers:    []string{"a", "b", "c"},
 		Authentication: KafkaAuthentication{
 			Sasl: Sasl{
-				Mechanism: "plain",
+				Mechanism: Plain,
 				Username:  "b",
 				Password:  "c",
 			},
 		},
 		Enveloped: false,
-		Format:    "json",
+		Format:    Json,
 	}
 
 	testRule(t, target)
@@ -50,7 +50,7 @@ func TestRuleAmqpExtrernal(t *testing.T) {
 		MessageTTL:         50,
 		Headers:            []Header{{Name: "a", Value: "b"}},
 		Enveloped:          true,
-		Format:             "json",
+		Format:             Json,
 	}
 
 	testRule(t, target)
@@ -60,7 +60,7 @@ func TestRuleAmqp(t *testing.T) {
 	target := &AmqpTarget{
 		Headers:   []Header{{Name: "a", Value: "b"}},
 		Enveloped: true,
-		Format:    "json",
+		Format:    Json,
 	}
 
 	testRule(t, target)
@@ -77,7 +77,7 @@ func TestRuleAwsSqs(t *testing.T) {
 			},
 		},
 		Enveloped: true,
-		Format:    "json",
+		Format:    Json,
 	}
 
 	testRule(t, target)
@@ -94,7 +94,7 @@ func TestRuleAwsKenesis(t *testing.T) {
 			},
 		},
 		Enveloped: true,
-		Format:    "json",
+		Format:    Json,
 	}
 
 	testRule(t, target)
@@ -123,7 +123,7 @@ func TestRuleHttpGoogleCloudFunction(t *testing.T) {
 		Headers:      []Header{{Name: "a", Value: "b"}},
 		SigningKeyID: "1234",
 		Enveloped:    true,
-		Format:       "json",
+		Format:       Json,
 	}
 
 	testRule(t, target)
@@ -135,7 +135,7 @@ func TestRuleHttpAzureFunction(t *testing.T) {
 		AzureFunctionName: "heck",
 		Headers:           []Header{{Name: "a", Value: "b"}},
 		Enveloped:         true,
-		Format:            "json",
+		Format:            Json,
 	}
 
 	testRule(t, target)
@@ -173,7 +173,7 @@ func TestRuleHttp(t *testing.T) {
 		Url:       "https://test.com",
 		Headers:   []Header{{Name: "a", Value: "b"}},
 		Enveloped: true,
-		Format:    "json",
+		Format:    MsgPack,
 	}
 
 	testRule(t, target)
@@ -218,10 +218,10 @@ func testRule(t *testing.T, target Target) {
 
 	rule := NewRule{
 		Status:      "enabled",
-		RequestMode: "single",
+		RequestMode: Single,
 		Source: Source{
 			ChannelFilter: "aaa",
-			Type:          "channel.message",
+			Type:          ChannelMessage,
 		},
 		Target: target,
 	}

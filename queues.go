@@ -1,5 +1,10 @@
 package control
 
+type Region string
+
+const UsEast1A Region = "us-east-1-a"
+const EuWest1A Region = "eu-west-1-a"
+
 type Amqp struct {
 	Uri       string `json:"uri,omitempty"`
 	QueueName string `json:"queueName,omitempty"`
@@ -27,7 +32,7 @@ type Queue struct {
 	ID           string   `json:"id,omitempty"`
 	AppID        string   `json:"appId,omitempty"`
 	Name         string   `json:"name,omitempty"`
-	Region       string   `json:"region,omitempty"`
+	Region       Region   `json:"region,omitempty"`
 	Amqp         Amqp     `json:"amqp"`
 	Stomp        Stomp    `json:"stomp"`
 	State        string   `json:"state,omitempty"`
@@ -43,7 +48,7 @@ type NewQueue struct {
 	Name      string `json:"name,omitempty"`
 	Ttl       int    `json:"ttl"`
 	MaxLength int    `json:"maxLength"`
-	Region    string `json:"region,omitempty"`
+	Region    Region `json:"region,omitempty"`
 }
 
 func (c *Client) Queues(appID string) ([]Queue, error) {

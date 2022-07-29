@@ -18,7 +18,7 @@ func TestQueues(t *testing.T) {
 		Name:      name,
 		Ttl:       50,
 		MaxLength: 10,
-		Region:    "eu-west-1-a",
+		Region:    EuWest1A,
 	}
 
 	q, err := client.CreateQueue(app.ID, &queue)
@@ -36,7 +36,7 @@ func TestQueues(t *testing.T) {
 		Name:      name + "-changed",
 		Ttl:       40,
 		MaxLength: 20,
-		Region:    "us-east-1-a",
+		Region:    UsEast1A,
 	}
 
 	err = client.DeleteQueue(app.ID, q.ID)

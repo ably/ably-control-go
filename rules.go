@@ -7,16 +7,43 @@ import (
 
 type NewRuleNoJson NewRule
 
+type AuthenticationMode string
+
+const AuthToken AuthenticationMode = "token"
+
+type Mechanism string
+
+const Plain Mechanism = "plain"
+const Scram_sha_256 Mechanism = "scra-sha-256"
+const Scram_sha_512 Mechanism = "scra-sha-512"
+
+type Format string
+
+const Json Format = "json"
+const MsgPack Format = "msgpack"
+
+type SourceType string
+
+const ChannelMessage SourceType = "channel.message"
+const ChannelPresence SourceType = "channel.presence"
+const ChannelLifeCycle SourceType = "channel.lifecycle"
+const ChannelOccupancy SourceType = "channel.occupancy"
+
+type RequestMode string
+
+const Single RequestMode = "single"
+const Batch RequestMode = "batch"
+
 type Rule struct {
-	ID          string `json:"id,omitempty"`
-	AppID       string `json:"appId,omitempty"`
-	Version     string `json:"version,omitempty"`
-	Status      string `json:"status,omitempty"`
-	Created     int    `json:"created"`
-	Modified    int    `json:"modified"`
-	RequestMode string `json:"requestMode,omitempty"`
-	Source      Source `json:"source"`
-	Target      Target `json:"target"`
+	ID          string      `json:"id,omitempty"`
+	AppID       string      `json:"appId,omitempty"`
+	Version     string      `json:"version,omitempty"`
+	Status      string      `json:"status,omitempty"`
+	Created     int         `json:"created"`
+	Modified    int         `json:"modified"`
+	RequestMode RequestMode `json:"requestMode,omitempty"`
+	Source      Source      `json:"source"`
+	Target      Target      `json:"target"`
 }
 
 func (r *Rule) RuleType() string {
@@ -33,6 +60,9 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 	case "pulsar":
 		var t PulsarTarget
 		err = json.Unmarshal(raw.Target, &t)
+		if err != nil {
+			fmt.Println(err, string(raw.Target))
+		}
 		r.Target = &t
 	case "kafka":
 		var t KafkaTarget
@@ -110,7 +140,7 @@ type rawRule struct {
 	Created     int             `json:"created"`
 	Modified    int             `json:"modified"`
 	RuleType    string          `json:"ruleType,omitempty"`
-	RequestMode string          `json:"requestMode,omitempty"`
+	RequestMode RequestMode     `json:"requestMode,omitempty"`
 	Source      Source          `json:"source"`
 	Target      json.RawMessage `json:"target"`
 }
@@ -120,8 +150,8 @@ func (r *NewRule) RuleType() string {
 }
 
 type Source struct {
-	ChannelFilter string `json:"channelFilter,omitempty"`
-	Type          string `json:"type,omitempty"`
+	ChannelFilter string     `json:"channelFilter,omitempty"`
+	Type          SourceType `json:"type,omitempty"`
 }
 
 type Target interface {
@@ -139,10 +169,10 @@ type rawNewRule struct {
 }
 
 type NewRule struct {
-	Status      string `json:"status,omitempty"`
-	RequestMode string `json:"requestMode,omitempty"`
-	Source      Source `json:"source"`
-	Target      Target `json:"target"`
+	Status      string      `json:"status,omitempty"`
+	RequestMode RequestMode `json:"requestMode,omitempty"`
+	Source      Source      `json:"source"`
+	Target      Target      `json:"target"`
 }
 
 func (r *NewRule) MarshalJSON() ([]byte, error) {
@@ -153,14 +183,14 @@ func (r *NewRule) MarshalJSON() ([]byte, error) {
 }
 
 type PulsarAuthentication struct {
-	AuthenticationMode string `json:"authenticationMode,omitempty"`
-	Token              string `json:"token,omitempty"`
+	AuthenticationMode AuthenticationMode `json:"authenticationMode,omitempty"`
+	Token              string             `json:"token,omitempty"`
 }
 
 type Sasl struct {
-	Mechanism string `json:"mechanism,omitempty"`
-	Username  string `json:"username,omitempty"`
-	Password  string `json:"password,omitempty"`
+	Mechanism Mechanism `json:"mechanism,omitempty"`
+	Username  string    `json:"username,omitempty"`
+	Password  string    `json:"password,omitempty"`
 }
 
 type KafkaAuthentication struct {
@@ -246,7 +276,7 @@ type PulsarTarget struct {
 	TlsTrustCerts  []string             `json:"tlsTrustCerts,omitempty"`
 	Authentication PulsarAuthentication `json:"authentication"`
 	Enveloped      bool                 `json:"enveloped"`
-	Format         string               `json:"format,omitempty"`
+	Format         Format               `json:"format,omitempty"`
 }
 
 func (s *PulsarTarget) TargetType() string {
@@ -258,7 +288,7 @@ type KafkaTarget struct {
 	Brokers        []string            `json:"brokers,omitempty"`
 	Authentication KafkaAuthentication `json:"auth"`
 	Enveloped      bool                `json:"enveloped"`
-	Format         string              `json:"format,omitempty"`
+	Format         Format              `json:"format,omitempty"`
 }
 
 func (s *KafkaTarget) TargetType() string {
@@ -273,7 +303,7 @@ type AmqpExternalTarget struct {
 	MessageTTL         int      `json:"messageTtl"`
 	Headers            []Header `json:"headers,omitempty"`
 	Enveloped          bool     `json:"enveloped"`
-	Format             string   `json:"format,omitempty"`
+	Format             Format   `json:"format,omitempty"`
 }
 
 func (s *AmqpExternalTarget) TargetType() string {
@@ -284,7 +314,7 @@ type AmqpTarget struct {
 	QueueID   string   `json:"queueId,omitempty"`
 	Headers   []Header `json:"headers,omitempty"`
 	Enveloped bool     `json:"enveloped"`
-	Format    string   `json:"format,omitempty"`
+	Format    Format   `json:"format,omitempty"`
 }
 
 func (s *AmqpTarget) TargetType() string {
@@ -297,7 +327,7 @@ type AwsSqsTarget struct {
 	QueueName      string            `json:"queueName,omitempty"`
 	Authentication AwsAuthentication `json:"authentication"`
 	Enveloped      bool              `json:"enveloped"`
-	Format         string            `json:"format,omitempty"`
+	Format         Format            `json:"format,omitempty"`
 }
 
 func (s *AwsSqsTarget) TargetType() string {
@@ -310,7 +340,7 @@ type AwsKenesisTarget struct {
 	PartitionKey   string            `json:"partitionKey,omitempty"`
 	Authentication AwsAuthentication `json:"authentication"`
 	Enveloped      bool              `json:"enveloped"`
-	Format         string            `json:"format,omitempty"`
+	Format         Format            `json:"format,omitempty"`
 }
 
 func (s *AwsKenesisTarget) TargetType() string {
@@ -335,7 +365,7 @@ type HttpGoogleCloudFunctionTarget struct {
 	Headers      []Header `json:"headers,omitempty"`
 	SigningKeyID string   `json:"signingKeyId,omitempty"`
 	Enveloped    bool     `json:"enveloped"`
-	Format       string   `json:"format,omitempty"`
+	Format       Format   `json:"format,omitempty"`
 }
 
 func (s *HttpGoogleCloudFunctionTarget) TargetType() string {
@@ -348,7 +378,7 @@ type HttpAzureFunctionTarget struct {
 	Headers           []Header `json:"headers,omitempty"`
 	SigningKeyID      string   `json:"signingKeyId,omitempty"`
 	Enveloped         bool     `json:"enveloped"`
-	Format            string   `json:"format,omitempty"`
+	Format            Format   `json:"format,omitempty"`
 }
 
 func (s *HttpAzureFunctionTarget) TargetType() string {
@@ -389,7 +419,7 @@ type HttpTarget struct {
 	Headers      []Header `json:"headers,omitempty"`
 	SigningKeyID string   `json:"signingKeyId,omitempty"`
 	Enveloped    bool     `json:"enveloped"`
-	Format       string   `json:"format,omitempty"`
+	Format       Format   `json:"format,omitempty"`
 }
 
 func (s *HttpTarget) TargetType() string {
