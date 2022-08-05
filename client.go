@@ -1,3 +1,20 @@
+// package control is an implementation of the Ably Control API.
+//
+// The Ably Control API is a REST API that enables you to manage your Ably
+// account programmatically https://ably.com/documentation/control-api.
+//
+// Using the Control API you can automate the provisioning, management,
+// and testing of your Ably realtime infrastructure. You can dynamically
+// create Ably apps, configure them, and delete them if necessary.
+//
+// With the Control API you can create and manage:
+//   - Your Ably apps
+//   - API keys for an Ably app
+//   - Namespaces (for channel rules)
+//   - Queues
+//   - Integration rules
+//
+// Control API is currently in Preview.
 package control
 
 import (
@@ -7,18 +24,26 @@ import (
 	"net/http"
 )
 
+// The URL of the Ably Control API.
 const API_URL = "https://control.ably.net/v1"
 
+// Client represents a REST client for the Ably Control API.
 type Client struct {
 	token     string
 	accountID string
-	Url       string
+	// Url is the base url for the REST API.
+	Url string
 }
 
+// NewClient creates a new REST client.
+//
+// Creating a new client involves making a request to the REST API to
+// fetch the account ID accociated with the token.
 func NewClient(token string) (Client, Me, error) {
 	return NewClientWithURL(token, API_URL)
 }
 
+// / NewClientWithURL is the same as NewClient but also takes a custom url.
 func NewClientWithURL(token, url string) (Client, Me, error) {
 	client := Client{
 		token: token,

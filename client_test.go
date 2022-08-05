@@ -41,7 +41,7 @@ func TestMain(m *testing.M) {
 func newTestApp(t *testing.T, client *Client) App {
 	n := rand.Uint64()
 	name := "test-" + fmt.Sprint(n)
-	t.Logf("crating app with name: %s", name)
+	t.Logf("creating app with name: %s", name)
 	app := App{
 		Name:   name,
 		Status: "enabled",

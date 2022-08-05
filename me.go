@@ -1,27 +1,42 @@
 package control
 
+// The Me struct contains information about the token the current user authenticates with.
 type Me struct {
-	Token   Token   `json:"token"`
-	User    User    `json:"user"`
+	// The access token used to authenticate.
+	Token Token `json:"token"`
+	// The user accociated with the used token.
+	User User `json:"user"`
+	// The account accociated with the used token.
 	Account Account `json:"account"`
 }
 
+// An access token used to authenticate with the Control API.
 type Token struct {
-	ID           string   `json:"id"`
-	Name         string   `json:"name"`
+	// The ID of the token.
+	ID string `json:"id"`
+	// The name of the token.
+	Name string `json:"name"`
+	// The capabilities of the token.
 	Capabilities []string `json:"capabilities"`
 }
 
+// User associated with the used token and account.
 type User struct {
-	ID    int    `json:"id"`
+	// The ID of the user.
+	ID int `json:"id"`
+	// The user's email address.
 	Email string `json:"email"`
 }
 
+// The account detials of an Ably account.
 type Account struct {
-	ID   string `json:"id"`
+	// The ID of the account.
+	ID string `json:"id"`
+	// The name of the account.
 	Name string `json:"name"`
 }
 
+// Me fetches information about the token the current user authenticates with.
 func (c *Client) Me() (Me, error) {
 	var me Me
 	err := c.request("GET", "/me", nil, &me)
