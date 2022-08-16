@@ -4,14 +4,21 @@ import (
 	"fmt"
 )
 
+// ErrorInfo represents an error type that the REST API may return.
 type ErrorInfo struct {
-	Message    string              `json:"message"`
-	Code       int                 `json:"code"`
-	StatusCode int                 `json:"statusCode"`
-	HRef       string              `json:"href"`
-	Details    map[string][]string `json:"details"`
+	// The error message.
+	Message string `json:"message"`
+	// The Ably error code.
+	Code int `json:"code"`
+	// The HTTP status code returned.
+	StatusCode int `json:"statusCode"`
+	// The URL to documentation about the error code.
+	HRef string `json:"href"`
+	// Any additional details about the error message.
+	Details map[string][]string `json:"details"`
 }
 
+// ErrorInfo implements the Error interface.
 func (e ErrorInfo) Error() string {
 	errorHref := e.HRef
 	if e.HRef == "" && e.Code != 0 {
