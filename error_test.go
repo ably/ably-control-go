@@ -15,6 +15,7 @@ func TestError(t *testing.T) {
 		Code:       40100,
 		StatusCode: 401,
 		HRef:       "https://help.ably.io/error/40100",
+		APIPath:    "/me",
 	}
 
 	assert.Equal(t, expected, errorInfo)

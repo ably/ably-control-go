@@ -84,6 +84,7 @@ func (c *Client) request(method, path string, in, out interface{}) error {
 		var errorInfo ErrorInfo
 		err = json.Unmarshal(body, &errorInfo)
 		if err == nil {
+			errorInfo.APIPath = path
 			return errorInfo
 		} else {
 			return ErrorInfo{
@@ -91,6 +92,7 @@ func (c *Client) request(method, path string, in, out interface{}) error {
 				Code:       0,
 				StatusCode: res.StatusCode,
 				HRef:       "",
+				APIPath:    path,
 			}
 		}
 	}

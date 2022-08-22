@@ -16,6 +16,8 @@ type ErrorInfo struct {
 	HRef string `json:"href"`
 	// Any additional details about the error message.
 	Details map[string][]string `json:"details"`
+	// The API path that resulted in this error.
+	APIPath string
 }
 
 // ErrorInfo implements the Error interface.
@@ -25,7 +27,7 @@ func (e ErrorInfo) Error() string {
 		errorHref = fmt.Sprintf("https://help.ably.io/error/%d", e.Code)
 	}
 
-	err := fmt.Sprintf("%s: code %d: status code: %d", e.Message, e.Code, e.StatusCode)
+	err := fmt.Sprintf("%s: %s: code %d: status code: %d", e.APIPath, e.Message, e.Code, e.StatusCode)
 	if errorHref != "" {
 		err += fmt.Sprintf(" see: %s", errorHref)
 	}
