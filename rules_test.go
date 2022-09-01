@@ -83,8 +83,8 @@ func TestRuleAwsSqs(t *testing.T) {
 	testRule(t, target)
 }
 
-func TestRuleAwsKenesis(t *testing.T) {
-	target := &AwsKenesisTarget{
+func TestRuleAwsKinesis(t *testing.T) {
+	target := &AwsKinesisTarget{
 		Region:       "us-east-2",
 		StreamName:   "aaaaaaa",
 		PartitionKey: "bbbbbbb",

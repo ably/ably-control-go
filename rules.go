@@ -118,7 +118,7 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 		err = json.Unmarshal(raw.Target, &t)
 		r.Target = &t
 	case "aws/kinesis":
-		var t AwsKenesisTarget
+		var t AwsKinesisTarget
 		err = json.Unmarshal(raw.Target, &t)
 		r.Target = &t
 	case "aws/lambda":
@@ -486,8 +486,8 @@ func (s *AwsSqsTarget) TargetType() string {
 	return "aws/sqs"
 }
 
-// AwsKenesisTarget is the type used for aws/kinesis rules.
-type AwsKenesisTarget struct {
+// AwsKinesisTarget is the type used for aws/kinesis rules.
+type AwsKinesisTarget struct {
 	// The region is which AWS Kinesis is hosted. See the AWS documentation for more detail.
 	// https://docs.aws.amazon.com/general/latest/gr/rande.html#lambda_region
 	Region string `json:"region,omitempty"`
@@ -508,8 +508,8 @@ type AwsKenesisTarget struct {
 	Format Format `json:"format,omitempty"`
 }
 
-// AwsKenesisTarget implements the Target interface.
-func (s *AwsKenesisTarget) TargetType() string {
+// AwsKinesisTarget implements the Target interface.
+func (s *AwsKinesisTarget) TargetType() string {
 	return "aws/kinesis"
 }
 
