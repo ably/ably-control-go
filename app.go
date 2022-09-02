@@ -14,15 +14,15 @@ type App struct {
 	// Enforce TLS for all connections. This setting overrides any channel setting.
 	TLSOnly bool `json:"tlsOnly"`
 	// The Firebase Cloud Messaging key.
-	FcmKey string `json:"fcmKey,omitempty"`
+	FcmKey string `json:"fcmKey"`
 	// The Apple Push Notification service certificate.
 	// This field can only be used to set a new value,
 	// it will not be populated by queries.
-	ApnsCertificate string `json:"apnsCertificate,omitempty"`
+	ApnsCertificate string `json:"apnsCertificate"`
 	// The Apple Push Notification service private key.
 	// This field can only be used to set a new value,
 	// it will not be populated by queries.
-	ApnsPrivateKey string `json:"apnsPrivateKey,omitempty"`
+	ApnsPrivateKey string `json:"apnsPrivateKey"`
 	// The Apple Push Notification service sandbox endpoint.
 	ApnsUseSandboxEndpoint bool `json:"apnsUseSandboxEndpoint"`
 }
