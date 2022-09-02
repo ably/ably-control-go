@@ -367,7 +367,7 @@ type PulsarTarget struct {
 	// connections. This enables server verification. You can specify an optional
 	// list of trusted CA certificates to use to verify the TLS certificate presented
 	// by the Pulsar cluster. Each certificate should be encoded in PEM format.
-	TlsTrustCerts []string `json:"tlsTrustCerts,omitempty"`
+	TlsTrustCerts []string `json:"tlsTrustCerts"`
 	// Pulsar supports authenticating clients using security tokens that are based on JSON Web Tokens.
 	Authentication PulsarAuthentication `json:"authentication"`
 	// Delivered messages are wrapped in an Ably envelope by default that contains metadata about the message
@@ -549,7 +549,7 @@ type HttpGoogleCloudFunctionTarget struct {
 	// an API key ensuring your servers can validate the payload using the private API key.
 	// See the webhook security docs for more information.
 	// https://ably.com/documentation/general/events#security
-	SigningKeyID string `json:"signingKeyId,omitempty"`
+	SigningKeyID string `json:"signingKeyId"`
 	// Delivered messages are wrapped in an Ably envelope by default that contains metadata about the message
 	// and its payload. The form of the envelope depends on whether it is part of a Webhook/Function or a
 	// Queue/Firehose rule. For everything besides Webhooks, you can ensure you only get the raw payload by
@@ -576,7 +576,7 @@ type HttpAzureFunctionTarget struct {
 	// The signing key ID for use in batch mode. Ably will optionally sign the payload using an API key
 	// ensuring your servers can validate the payload using the private API key. See the webhook security
 	// docs for more information. https://ably.com/documentation/general/events#security
-	SigningKeyID string `json:"signingKeyId,omitempty"`
+	SigningKeyID string `json:"signingKeyId"`
 	// Delivered messages are wrapped in an Ably envelope by default that contains metadata about the message
 	// and its payload. The form of the envelope depends on whether it is part of a Webhook/Function or a
 	// Queue/Firehose rule. For everything besides Webhooks, you can ensure you only get the raw payload by
@@ -600,7 +600,7 @@ type HttpCloudfareWorkerTarget struct {
 	// The signing key ID for use in batch mode. Ably will optionally sign the payload using an API key
 	// ensuring your servers can validate the payload using the private API key. See the webhook security
 	// docs for more information. https://ably.com/documentation/general/events#security
-	SigningKeyID string `json:"signingKeyId,omitempty"`
+	SigningKeyID string `json:"signingKeyId"`
 }
 
 // HttpCloudfareWorkerTarget implements the Target interface.
@@ -617,7 +617,7 @@ type HttpZapierTarget struct {
 	// The signing key ID for use in batch mode. Ably will optionally sign the payload using an API key
 	// ensuring your servers can validate the payload using the private API key. See the webhook security
 	// docs for more information. https://ably.com/documentation/general/events#security
-	SigningKeyID string `json:"signingKeyId,omitempty"`
+	SigningKeyID string `json:"signingKeyId"`
 }
 
 // HttpZapierTarget implements the Target interface.
@@ -649,7 +649,7 @@ type HttpTarget struct {
 	// API key ensuring your servers can validate the payload using the private API key.
 	// See the webhook security docs for more information.
 	// https://ably.com/documentation/general/events#security
-	SigningKeyID string `json:"signingKeyId,omitempty"`
+	SigningKeyID string `json:"signingKeyId"`
 	// Delivered messages are wrapped in an Ably envelope by default that contains metadata about the message
 	// and its payload. The form of the envelope depends on whether it is part of a Webhook/Function or a
 	// Queue/Firehose rule. For everything besides Webhooks, you can ensure you only get the raw payload by
