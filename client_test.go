@@ -42,7 +42,7 @@ func newTestApp(t *testing.T, client *Client) App {
 	n := rand.Uint64()
 	name := "test-" + fmt.Sprint(n)
 	t.Logf("creating app with name: %s", name)
-	app := App{
+	app := NewApp{
 		Name:   name,
 		Status: "enabled",
 		//TLSOnly:                false,
@@ -51,12 +51,12 @@ func newTestApp(t *testing.T, client *Client) App {
 		ApnsPrivateKey:         "",
 		ApnsUseSandboxEndpoint: false,
 	}
-	app, err := client.CreateApp(&app)
+	app_ret, err := client.CreateApp(&app)
 
 	assert.NoError(t, err)
 	apps = append(apps, app.ID)
 
-	return app
+	return app_ret
 }
 
 func newTestClient(t *testing.T) (Client, Me) {

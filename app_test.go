@@ -14,10 +14,10 @@ func TestApp(t *testing.T) {
 
 	assert.NotEqual(t, len(apps), 0)
 
-	a, err := client.UpdateApp(app.ID, &App{TLSOnly: false})
+	a, err := client.UpdateApp(app.ID, &NewApp{TLSOnly: false})
 	assert.NoError(t, err)
 	assert.False(t, a.TLSOnly)
-	newApp := App{
+	newApp := NewApp{
 		Status:                 "disabled",
 		TLSOnly:                true,
 		ApnsUseSandboxEndpoint: true,
