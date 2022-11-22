@@ -40,11 +40,11 @@ type Messages struct {
 // Stats contains statistics about an Ably queue
 type Stats struct {
 	// The rate at which messages are published to the queue. Rate is messages per minute.
-	PublishRate int `json:"publishRate"`
+	PublishRate float64 `json:"publishRate"`
 	// The rate at which messages are delivered from the queue. Rate is messages per minute.
-	DeliveryRate int `json:"deliveryRate"`
+	DeliveryRate float64 `json:"deliveryRate"`
 	// The rate at which messages are acknowledged. Rate is messages per minute.
-	AcknowledgementRate int `json:"acknowledgementRate"`
+	AcknowledgementRate float64 `json:"acknowledgementRate"`
 }
 
 // Queue represents an Ably queue.
