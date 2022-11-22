@@ -21,7 +21,7 @@ type NewApp struct {
 	// This field can only be used to set a new value,
 	// it will not be populated by queries.
 	ApnsPrivateKey string `json:"apnsPrivateKey"`
-	// The Apple Push Notification service sandbox endpoint.
+	// Use the Apple Push Notification service sandbox endpoint.
 	ApnsUseSandboxEndpoint bool `json:"apnsUseSandboxEndpoint"`
 }
 
@@ -48,7 +48,7 @@ type App struct {
 	// This field can only be used to set a new value,
 	// it will not be populated by queries.
 	ApnsPrivateKey string `json:"apnsPrivateKey"`
-	// The Apple Push Notification service sandbox endpoint.
+	// Use the Apple Push Notification service sandbox endpoint.
 	ApnsUseSandboxEndpoint bool `json:"apnsUseSandboxEndpoint"`
 }
 
