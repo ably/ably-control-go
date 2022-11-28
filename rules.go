@@ -191,7 +191,7 @@ func (r *NewRule) RuleType() string {
 type Source struct {
 	// ChannelFilter allows you to filter your rule based on a regular expression that is matched against the complete channel name.
 	// Leave this empty if you want the rule to apply to all channels.
-	ChannelFilter string `json:"channelFilter,omitempty"`
+	ChannelFilter string `json:"channelFilter"`
 	// Type controls the type of messages that are sent to the rule.
 	Type SourceType `json:"type,omitempty"`
 }
