@@ -20,6 +20,7 @@ package control
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -27,12 +28,20 @@ import (
 // The URL of the Ably Control API.
 const API_URL = "https://control.ably.net/v1"
 
+// defaultAblyAgent is the default value to set as the Ably-Agent HTTP header,
+// and can be extended for an individual Client by calling the AppendAblyAgent
+// method.
+const defaultAblyAgent = "ably-control-go/" + VERSION
+
 // Client represents a REST client for the Ably Control API.
 type Client struct {
 	token     string
 	accountID string
 	// Url is the base url for the REST API.
 	Url string
+
+	/// ablyAgent is the value to set as the Ably-Agent HTTP header.
+	ablyAgent string
 }
 
 // NewClient creates a new REST client.
@@ -46,8 +55,9 @@ func NewClient(token string) (Client, Me, error) {
 // / NewClientWithURL is the same as NewClient but also takes a custom url.
 func NewClientWithURL(token, url string) (Client, Me, error) {
 	client := Client{
-		token: token,
-		Url:   url,
+		token:     token,
+		Url:       url,
+		ablyAgent: defaultAblyAgent,
 	}
 	me, err := client.Me()
 	if err != nil {
@@ -55,6 +65,12 @@ func NewClientWithURL(token, url string) (Client, Me, error) {
 	}
 	client.accountID = me.Account.ID
 	return client, me, nil
+}
+
+// AppendAblyAgent appends an extra entry to the value sent as the Ably-Agent
+// HTTP header.
+func (c *Client) AppendAblyAgent(product, version string) {
+	c.ablyAgent = fmt.Sprintf("%s %s/%s", c.ablyAgent, product, version)
 }
 
 func (c *Client) request(method, path string, in, out interface{}) error {
@@ -71,6 +87,7 @@ func (c *Client) request(method, path string, in, out interface{}) error {
 		return err
 	}
 	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Ably-Agent", c.ablyAgent)
 	if in != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}

@@ -3,6 +3,8 @@ package control
 import (
 	"fmt"
 	"math/rand"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
@@ -64,4 +66,34 @@ func newTestClient(t *testing.T) (Client, Me) {
 	assert.NoError(t, err)
 	return client, me
 
+}
+
+// TestAblyAgent tests that client requests set the Ably-Agent HTTP header.
+func TestAblyAgent(t *testing.T) {
+	// start a test HTTP server which tracks the value of the Ably-Agent
+	// HTTP header and returns an empty JSON object.
+	var ablyAgent string
+	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		ablyAgent = req.Header.Get("Ably-Agent")
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Length", "2")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{}"))
+	})
+	srv := httptest.NewServer(handler)
+
+	// initialise a client, which will make a request to /me
+	client, _, err := NewClientWithURL("s3cr3t", srv.URL)
+	assert.NoError(t, err)
+
+	// check the Ably-Agent HTTP header was set
+	assert.Equal(t, "ably-control-go/"+VERSION, ablyAgent)
+
+	// add an extra Ably-Agent entry
+	client.AppendAblyAgent("test", "1.2.3")
+
+	// check requests now set the updated Ably-Agent HTTP header
+	_, err = client.Me()
+	assert.NoError(t, err)
+	assert.Equal(t, "ably-control-go/"+VERSION+" test/1.2.3", ablyAgent)
 }
