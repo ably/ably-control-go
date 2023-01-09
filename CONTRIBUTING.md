@@ -31,6 +31,6 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 4. Set the `VERSION` constant in `version.go` to the new version number and add this to the git index
 5. Create a PR for the release branch
 6. Once the PR is approved, merge it into `main`
-7. Run `git tag <VERSION_NUMBER>` with the new version and push the tag to git
+7. Add a tag and push to origin - e.g.: `git tag v1.2.3` && `git push origin v1.2.3`
 8. Create the release on Github, from the new tag, including populating the release notes
 9. Update the [Ably Changelog](https://changelog.ably.com/) (via [headwayapp](https://headwayapp.co/)) with these changes (again, you can just copy the notes you added to the CHANGELOG)
