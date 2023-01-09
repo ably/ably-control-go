@@ -28,7 +28,7 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 1. Make sure the tests are passing in CI for the branch you're building
 2. Create a new branch for the release, for example `release/1.2.3`
 3. Update the CHANGELOG.md with any customer-affecting changes since the last release and add this to the git index
-4. Replace all references of the current version number with the new version number and add this to the git index
+4. Set the `VERSION` constant in `version.go` to the new version number and add this to the git index
 5. Create a PR for the release branch
 6. Once the PR is approved, merge it into `main`
 7. Run `git tag <VERSION_NUMBER>` with the new version and push the tag to git
