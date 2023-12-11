@@ -45,6 +45,7 @@ func TestRuleAmqpExtrernal(t *testing.T) {
 	target := &AmqpExternalTarget{
 		Url:                "amqps://test.com",
 		RoutingKey:         "key",
+		Exchange:           "exchange",
 		MandatoryRoute:     true,
 		PersistentMessages: true,
 		MessageTTL:         50,
