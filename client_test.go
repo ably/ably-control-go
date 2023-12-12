@@ -49,6 +49,8 @@ func newTestApp(t *testing.T, client *Client) App {
 		Status: "enabled",
 		//TLSOnly:                false,
 		FcmKey:                 "",
+		FcmServiceAccount:      "",
+		FcmProjectId:           "",
 		ApnsCertificate:        "",
 		ApnsPrivateKey:         "",
 		ApnsUseSandboxEndpoint: false,
