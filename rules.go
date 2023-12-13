@@ -417,6 +417,10 @@ type AmqpExternalTarget struct {
 	// physical queue. See this Ably knowledge base article for details.
 	// https://knowledge.ably.com/what-is-the-format-of-the-routingkey-for-an-amqp-or-kinesis-reactor-rule
 	RoutingKey string `json:"routingKey,omitempty"`
+	// The RabbitMQ exchange, if needed supports interpolation;
+	// see https://faqs.ably.com/what-is-the-format-of-the-routingkey-for-an-amqp-or-kinesis-reactor-rule
+	// for more info. If you don't use RabbitMQ exchanges, leave this blank.
+	Exchange string `json:"exchange,omitempty"`
 	// Reject delivery of the message if the route does not exist, otherwise fail silently.
 	MandatoryRoute bool `json:"mandatoryRoute"`
 	// Marks the message as persistent, instructing the broker to write it to disk if it is in a durable queue.
