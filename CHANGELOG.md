@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/ably/ably-control-go/tree/v0.2.0)
+
+[Full Changelog](https://github.com/ably/ably-control-go/compare/v0.2.0..v0.1.0)
+
+**Merged pull requests:**
+
+- \[SDK-3336\] - `exchange` Parameter for `AmqpExternalTarget` struct [\#24](https://github.com/ably/ably-control-go/pull/24) ([graham-russell](https://github.com/graham-russell))
+
 ## [0.1.0](https://github.com/ably/ably-control-go/tree/v0.1.0)
 
 This is the initial release of ably-control-go, a Go client library for the Ably Control API.
