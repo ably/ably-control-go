@@ -15,8 +15,9 @@ func TestKeys(t *testing.T) {
 	name := "test-key-" + fmt.Sprint(rand.Uint64())
 
 	key := NewKey{
-		Name:       name,
-		Capability: map[string][]string{"a": {"subscribe"}},
+		Name:            name,
+		Capability:      map[string][]string{"a": {"subscribe"}},
+		RevocableTokens: true,
 	}
 
 	k, err := client.CreateKey(app.ID, &key)
@@ -24,6 +25,7 @@ func TestKeys(t *testing.T) {
 	assert.Equal(t, key.Name, k.Name)
 	assert.Equal(t, key.Capability, k.Capability)
 	assert.Equal(t, k.Status, 0)
+	assert.Equal(t, key.RevocableTokens, k.RevocableTokens)
 	assert.NotEmpty(t, k.AppID)
 	assert.NotEmpty(t, k.Created)
 	assert.NotEmpty(t, k.Modified)
@@ -35,14 +37,16 @@ func TestKeys(t *testing.T) {
 	assert.NotEmpty(t, keys)
 
 	key = NewKey{
-		Name:       name + "-changed",
-		Capability: map[string][]string{"b": {"publish"}},
+		Name:            name + "-changed",
+		Capability:      map[string][]string{"b": {"publish"}},
+		RevocableTokens: false,
 	}
 
 	k, err = client.UpdateKey(app.ID, k.ID, &key)
 	assert.NoError(t, err)
 	assert.Equal(t, key.Name, k.Name)
 	assert.Equal(t, key.Capability, k.Capability)
+	assert.Equal(t, key.RevocableTokens, k.RevocableTokens)
 
 	err = client.RevokeKey(app.ID, k.ID)
 	assert.NoError(t, err)

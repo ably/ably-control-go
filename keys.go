@@ -19,6 +19,9 @@ type Key struct {
 	Created int `json:"created"`
 	// Unix timestamp representing the date and time of the last modification of the key.
 	Modified int `json:"modified"`
+	// Token revocation is a security mechanism allowing an app to invalidate authentication tokens,
+	// primarily used against malicious clients. Implementation sets tokens' maximum time-to-live (TTL) to one hour.
+	RevocableTokens bool `json:"revocableTokens"`
 }
 
 // A struct representing the settable fields of an Ably key.
@@ -28,6 +31,9 @@ type NewKey struct {
 	// The capabilities that this key has. More information on capabilities
 	// can be found in the Ably documentation https://ably.com/documentation/core-features/authentication#capabilities-explained.
 	Capability map[string][]string `json:"capability"`
+	// Enable Revocable Tokens. More information on Token Revocation can be
+	// found in the Ably documentation https://ably.com/docs/auth/revocation
+	RevocableTokens bool `json:"revocableTokens"`
 }
 
 // Keys lists the API keys associated with the application ID.
