@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/ably/ably-control-go/tree/v0.3.0)
+
+[Full Changelog](https://github.com/ably/ably-control-go/compare/v0.3.0..v0.2.0)
+
+**Merged pull requests:**
+
+- \[INF-3250\] - Add Token Revocation parameter for Ably Keys [\#27](https://github.com/ably/ably-control-go/pull/27) ([graham-russell](https://github.com/graham-russell))
+
 ## [0.2.0](https://github.com/ably/ably-control-go/tree/v0.2.0)
 
 [Full Changelog](https://github.com/ably/ably-control-go/compare/v0.2.0..v0.1.0)
