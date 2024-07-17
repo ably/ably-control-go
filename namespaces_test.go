@@ -40,6 +40,9 @@ func TestNamespaces(t *testing.T) {
 		PushEnabled:      true,
 		TlsOnly:          true,
 		ExposeTimeserial: true,
+		BatchingEnabled:  true,
+		BatchingPolicy:   "some-policy",
+		BatchingInterval: BatchingInterval(100),
 	}
 
 	n, err = client.UpdateNamespace(app.ID, &namespace)

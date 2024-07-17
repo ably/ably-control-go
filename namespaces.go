@@ -27,6 +27,14 @@ type Namespace struct {
 	// If true, messages received on a channel will contain a unique timeserial that can be
 	// referenced by later messages for use with message interactions.
 	ExposeTimeserial bool `json:"exposeTimeserial"`
+	// If true, channels within this namespace will start batching inbound
+	// messages instead of sending them out immediately to subscribers as per
+	// the configured policy.
+	BatchingEnabled bool `json:"batchingEnabled"`
+	// When configured, sets the policy for message batching.
+	BatchingPolicy string `json:"batchingPolicy"`
+	// When configured, sets the maximium batching interval in the channel.
+	BatchingInterval *int `json:"batchingInterval,omitempty"`
 }
 
 // Namespaces lists the namespaces for the specified application ID.
@@ -58,4 +66,8 @@ func (c *Client) UpdateNamespace(appID string, namespace *Namespace) (Namespace,
 func (c *Client) DeleteNamespace(appID, namespaceID string) error {
 	err := c.request("DELETE", "/apps/"+appID+"/namespaces/"+namespaceID, nil, nil)
 	return err
+}
+
+func BatchingInterval(interval int) *int {
+	return &interval
 }
