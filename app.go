@@ -13,6 +13,10 @@ type NewApp struct {
 	TLSOnly bool `json:"tlsOnly"`
 	// The Firebase Cloud Messaging key.
 	FcmKey string `json:"fcmKey"`
+	// The Firebase Service Account key. To use the service account key you must also provide a projectId.
+	FcmServiceAccount string `json:"fcmServiceAccount"`
+	// The Firebase Project ID. To authenticate with firebase you must also provide a service account key.
+	FcmProjectId string `json:"fcmProjectId"`
 	// The Apple Push Notification service certificate.
 	// This field can only be used to set a new value,
 	// it will not be populated by queries.
@@ -40,6 +44,10 @@ type App struct {
 	TLSOnly bool `json:"tlsOnly"`
 	// The Firebase Cloud Messaging key.
 	FcmKey string `json:"fcmKey"`
+	// The Firebase Service Account key. To use the service account key you must also provide a projectId.
+	FcmServiceAccount string `json:"fcmServiceAccount"`
+	// The Firebase Project ID. To authenticate with firebase you must also provide a service account key.
+	FcmProjectId string `json:"fcmProjectId"`
 	// The Apple Push Notification service certificate.
 	// This field can only be used to set a new value,
 	// it will not be populated by queries.
