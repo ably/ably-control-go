@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/ably/ably-control-go/tree/v0.4.0)
+
+[Full Changelog](https://github.com/ably/ably-control-go/compare/v0.4.0..v0.3.0)
+
+**Merged pull requests:**
+
+- \[INF-4937\] - Add server-side batching [\#29](https://github.com/ably/ably-control-go/pull/29) ([surminus](https://github.com/surminus))
+
 ## [0.3.0](https://github.com/ably/ably-control-go/tree/v0.3.0)
 
 [Full Changelog](https://github.com/ably/ably-control-go/compare/v0.3.0..v0.2.0)
