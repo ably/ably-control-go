@@ -41,7 +41,7 @@ func TestNamespaces(t *testing.T) {
 		TlsOnly:          true,
 		ExposeTimeserial: true,
 		BatchingEnabled:  true,
-		BatchingPolicy:   "some-policy",
+		BatchingPolicy:   "simple",
 		BatchingInterval: BatchingInterval(100),
 	}
 
