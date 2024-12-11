@@ -22,6 +22,7 @@ func TestNamespaces(t *testing.T) {
 		PushEnabled:      false,
 		TlsOnly:          false,
 		ExposeTimeserial: false,
+		BatchingEnabled:  false,
 	}
 
 	n, err := client.CreateNamespace(app.ID, &namespace)

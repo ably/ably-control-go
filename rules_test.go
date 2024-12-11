@@ -41,7 +41,7 @@ func TestRuleKafka(t *testing.T) {
 	testRule(t, target)
 }
 
-func TestRuleAmqpExtrernal(t *testing.T) {
+func TestRuleAmqpExternal(t *testing.T) {
 	target := &AmqpExternalTarget{
 		Url:                "amqps://test.com",
 		RoutingKey:         "key",
