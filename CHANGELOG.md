@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/ably/ably-control-go/tree/v0.5.0)
+
+[Full Changelog](https://github.com/ably/ably-control-go/compare/v0.5.0..v0.4.0)
+
+**Merged pull requests:**
+
+- \[INF-5307\] - Upgrade golang versions [\#32](https://github.com/ably/ably-control-go/pull/32) ([graham-russell](https://github.com/graham-russell))
+- \[INF-5307\] - Update SDK with `ingress/mongodb`  and `ingress-postgres-outbox` Integration Rules [\#31](https://github.com/ably/ably-control-go/pull/31) ([graham-russell](https://github.com/graham-russell))
+- feat: add support for fcm v1 credentials [\#25](https://github.com/ably/ably-control-go/pull/25) ([owenpearson](https://github.com/owenpearson))
+- Bump gopkg.in/yaml.v3 from 3.0.0-20200313102051-9f266ea9e77c to 3.0.0 [\#23](https://github.com/ably/ably-control-go/pull/23) ([dependabot[bot]](https://github.com/apps/dependabot))
+
+
 ## [0.4.0](https://github.com/ably/ably-control-go/tree/v0.4.0)
 
 [Full Changelog](https://github.com/ably/ably-control-go/compare/v0.4.0..v0.3.0)
