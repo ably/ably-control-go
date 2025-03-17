@@ -42,8 +42,39 @@ func TestNamespaces(t *testing.T) {
 		TlsOnly:          true,
 		ExposeTimeserial: true,
 		BatchingEnabled:  true,
-		BatchingPolicy:   "simple",
-		BatchingInterval: BatchingInterval(100),
+		BatchingInterval: Interval(100),
+	}
+
+	n, err = client.UpdateNamespace(app.ID, &namespace)
+	assert.NoError(t, err)
+	assert.Equal(t, namespace, n)
+
+	namespace = Namespace{
+		ID:               namespace.ID,
+		Authenticated:    true,
+		Persisted:        true,
+		PersistLast:      true,
+		PushEnabled:      true,
+		TlsOnly:          true,
+		ExposeTimeserial: true,
+		BatchingEnabled:  false,
+	}
+
+	n, err = client.UpdateNamespace(app.ID, &namespace)
+	assert.NoError(t, err)
+	assert.Equal(t, namespace, n)
+
+	namespace = Namespace{
+		ID:                 namespace.ID,
+		Authenticated:      true,
+		Persisted:          true,
+		PersistLast:        true,
+		PushEnabled:        true,
+		TlsOnly:            true,
+		ExposeTimeserial:   true,
+		ConflationEnabled:  true,
+		ConflationInterval: Interval(1000),
+		ConflationKey:      "test",
 	}
 
 	n, err = client.UpdateNamespace(app.ID, &namespace)
