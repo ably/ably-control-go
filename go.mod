@@ -1,6 +1,8 @@
 module github.com/ably/ably-control-go
 
-go 1.23
+go 1.24
+
+toolchain go1.24.1
 
 require github.com/stretchr/testify v1.7.1
 

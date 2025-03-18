@@ -31,10 +31,18 @@ type Namespace struct {
 	// messages instead of sending them out immediately to subscribers as per
 	// the configured policy.
 	BatchingEnabled bool `json:"batchingEnabled"`
-	// When configured, sets the policy for message batching.
-	BatchingPolicy string `json:"batchingPolicy"`
 	// When configured, sets the maximium batching interval in the channel.
 	BatchingInterval *int `json:"batchingInterval,omitempty"`
+	// If `true`, enables conflation for channels within this namespace.
+	// Conflation reduces the number of messages sent to subscribers by
+	// combining multiple messages into a single message.
+	ConflationEnabled bool `json:"conflationEnabled"`
+	// The interval in milliseconds at which messages are conflated. This
+	// determines how frequently messages are combined into a single message.
+	ConflationInterval *int `json:"conflationInterval"`
+	// The key used to determine which messages should be conflated. Messages
+	// with the same conflation key will be combined into a single message.
+	ConflationKey string `json:"conflationKey"`
 }
 
 // Namespaces lists the namespaces for the specified application ID.
@@ -68,6 +76,6 @@ func (c *Client) DeleteNamespace(appID, namespaceID string) error {
 	return err
 }
 
-func BatchingInterval(interval int) *int {
+func Interval(interval int) *int {
 	return &interval
 }
