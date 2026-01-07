@@ -131,8 +131,11 @@ func TestRuleHttpGoogleCloudFunction(t *testing.T) {
 }
 
 func TestRuleHttpAzureFunction(t *testing.T) {
+	// AzureAppID must resolve via DNS for API validation.
+	// Using a known-resolvable app ID from the website team's tests:
+	// https://github.com/ably/website/blob/74ae7eb932feac3e5f653d44dad7a27011bc99e2/spec/decorators/rules_decorator_spec.rb#L94
 	target := &HttpAzureFunctionTarget{
-		AzureAppID:        "11111",
+		AzureAppID:        "420",
 		AzureFunctionName: "heck",
 		Headers:           []Header{{Name: "a", Value: "b"}},
 		Enveloped:         true,
@@ -144,7 +147,7 @@ func TestRuleHttpAzureFunction(t *testing.T) {
 
 func TestRuleHttpCloudfareWorker(t *testing.T) {
 	target := &HttpCloudfareWorkerTarget{
-		Url:     "https://test.com",
+		Url:     "https://example.com",
 		Headers: []Header{{Name: "a", Value: "b"}},
 	}
 
@@ -153,7 +156,7 @@ func TestRuleHttpCloudfareWorker(t *testing.T) {
 
 func TestRuleHttpZapier(t *testing.T) {
 	target := &HttpZapierTarget{
-		Url:     "https://test.com",
+		Url:     "https://example.com",
 		Headers: []Header{{Name: "a", Value: "b"}},
 	}
 
@@ -171,7 +174,7 @@ func TestRuleHttpIfttt(t *testing.T) {
 
 func TestRuleHttp(t *testing.T) {
 	target := &HttpTarget{
-		Url:       "https://test.com",
+		Url:       "https://example.com",
 		Headers:   []Header{{Name: "a", Value: "b"}},
 		Enveloped: true,
 		Format:    MsgPack,
