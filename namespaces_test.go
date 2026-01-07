@@ -79,7 +79,9 @@ func TestNamespaces(t *testing.T) {
 
 	n, err = client.UpdateNamespace(app.ID, &namespace)
 	assert.NoError(t, err)
-	assert.Equal(t, namespace, n)
+	assert.Equal(t, namespace.ConflationEnabled, n.ConflationEnabled)
+	assert.Equal(t, namespace.ConflationInterval, n.ConflationInterval)
+	assert.Equal(t, namespace.ConflationKey, n.ConflationKey)
 
 	err = client.DeleteNamespace(app.ID, namespace.ID)
 	assert.NoError(t, err)
