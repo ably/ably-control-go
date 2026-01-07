@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.0](https://github.com/ably/ably-control-go/tree/v0.7.0)
+
+[Full Changelog](https://github.com/ably/ably-control-go/compare/v0.7.0..v0.6.0)
+
+**Merged pull requests:**
+
+- \[INF-6633\] Add retry logic to client [\#37](https://github.com/ably/ably-control-go/pull/37) ([martin-ably](https://github.com/martin-ably))
+- Bump gopkg.in/yaml.v3 from 3.0.0 to 3.0.1 [\#36](https://github.com/ably/ably-control-go/pull/36) ([dependabot[bot]](https://github.com/apps/dependabot))
+
 ## [0.6.0](https://github.com/ably/ably-control-go/tree/v0.6.0)
 
 [Full Changelog](https://github.com/ably/ably-control-go/compare/v0.6.0..v0.5.0)
