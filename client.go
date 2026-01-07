@@ -23,6 +23,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 // The URL of the Ably Control API.
@@ -40,24 +43,104 @@ type Client struct {
 	// Url is the base url for the REST API.
 	Url string
 
-	/// ablyAgent is the value to set as the Ably-Agent HTTP header.
+	// ablyAgent is the value to set as the Ably-Agent HTTP header.
 	ablyAgent string
+
+	// httpClient is the retryable HTTP client used for making requests.
+	httpClient *retryablehttp.Client
+}
+
+// ClientOption is a function that configures a Client.
+type ClientOption func(*retryablehttp.Client)
+
+// Backoff is a function type for calculating retry backoff durations.
+// It receives min/max wait times, the attempt number (starting at 0),
+// and the response, and returns the duration to wait before the next retry.
+type Backoff = retryablehttp.Backoff
+
+// CheckRetry is a function type for determining whether a request should be retried.
+// It receives the context, response, and error, and returns whether the request
+// should be retried and any error.
+type CheckRetry = retryablehttp.CheckRetry
+
+// WithRetryMax sets the maximum number of retries for failed requests.
+// Default is 4 retries.
+func WithRetryMax(retries int) ClientOption {
+	return func(c *retryablehttp.Client) {
+		c.RetryMax = retries
+	}
+}
+
+// WithRetryWaitMin sets the minimum time to wait between retries.
+// Default is 1 second.
+func WithRetryWaitMin(d time.Duration) ClientOption {
+	return func(c *retryablehttp.Client) {
+		c.RetryWaitMin = d
+	}
+}
+
+// WithRetryWaitMax sets the maximum time to wait between retries.
+// Default is 30 seconds.
+func WithRetryWaitMax(d time.Duration) ClientOption {
+	return func(c *retryablehttp.Client) {
+		c.RetryWaitMax = d
+	}
+}
+
+// WithHTTPClient sets the underlying HTTP client to use for requests.
+func WithHTTPClient(httpClient *http.Client) ClientOption {
+	return func(c *retryablehttp.Client) {
+		c.HTTPClient = httpClient
+	}
+}
+
+// WithBackoff sets a custom backoff strategy function.
+// The function receives min/max wait times, the attempt number (starting at 0),
+// and the response, and returns the duration to wait before the next retry.
+func WithBackoff(backoff Backoff) ClientOption {
+	return func(c *retryablehttp.Client) {
+		c.Backoff = backoff
+	}
+}
+
+// WithCheckRetry sets a custom retry policy function.
+// The function receives the context, response, and error, and returns
+// whether the request should be retried and any error.
+func WithCheckRetry(checkRetry CheckRetry) ClientOption {
+	return func(c *retryablehttp.Client) {
+		c.CheckRetry = checkRetry
+	}
 }
 
 // NewClient creates a new REST client.
 //
 // Creating a new client involves making a request to the REST API to
-// fetch the account ID accociated with the token.
-func NewClient(token string) (Client, Me, error) {
-	return NewClientWithURL(token, API_URL)
+// fetch the account ID associated with the token.
+//
+// Optional ClientOption functions can be passed to configure retry behavior.
+func NewClient(token string, opts ...ClientOption) (Client, Me, error) {
+	return NewClientWithURL(token, API_URL, opts...)
 }
 
-// / NewClientWithURL is the same as NewClient but also takes a custom url.
-func NewClientWithURL(token, url string) (Client, Me, error) {
+// NewClientWithURL is the same as NewClient but also takes a custom url.
+func NewClientWithURL(token, url string, opts ...ClientOption) (Client, Me, error) {
+	retryClient := retryablehttp.NewClient()
+
+	// Set explicit defaults (can be overridden by opts)
+	retryClient.RetryMax = 4
+	retryClient.RetryWaitMin = 1 * time.Second
+	retryClient.RetryWaitMax = 30 * time.Second
+
+	// Apply any custom options
+	for _, opt := range opts {
+		opt(retryClient)
+	}
+
 	client := Client{
-		token:     token,
-		Url:       url,
-		ablyAgent: defaultAblyAgent,
+		token:      token,
+		Url:        url,
+		ablyAgent:  defaultAblyAgent,
+		httpClient: retryClient,
 	}
 	me, err := client.Me()
 	if err != nil {
@@ -74,15 +157,16 @@ func (c *Client) AppendAblyAgent(product, version string) {
 }
 
 func (c *Client) request(method, path string, in, out interface{}) error {
-	var inR io.Reader
+	var body []byte
 	if in != nil {
-		inData, err := json.Marshal(in)
+		var err error
+		body, err = json.Marshal(in)
 		if err != nil {
 			return err
 		}
-		inR = bytes.NewReader(inData)
 	}
-	req, err := http.NewRequest(method, c.Url+path, inR)
+
+	req, err := retryablehttp.NewRequest(method, c.Url+path, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
@@ -91,21 +175,23 @@ func (c *Client) request(method, path string, in, out interface{}) error {
 	if in != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	res, err := http.DefaultClient.Do(req)
+
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
+
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		body, _ := io.ReadAll(res.Body)
+		respBody, _ := io.ReadAll(res.Body)
 		var errorInfo ErrorInfo
-		err = json.Unmarshal(body, &errorInfo)
+		err = json.Unmarshal(respBody, &errorInfo)
 		if err == nil {
 			errorInfo.APIPath = path
 			return errorInfo
 		} else {
 			return ErrorInfo{
-				Message:    string(body),
+				Message:    string(respBody),
 				Code:       0,
 				StatusCode: res.StatusCode,
 				HRef:       "",
