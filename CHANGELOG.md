@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0](https://github.com/ably/ably-control-go/tree/v0.8.0)
+
+[Full Changelog](https://github.com/ably/ably-control-go/compare/v0.7.0..v0.8.0)
+
+**Merged pull requests:**
+
+- \[INF-6633\] Amend API discrepancies [\#39](https://github.com/ably/ably-control-go/pull/39) ([martin-ably](https://github.com/martin-ably))
+
 ## [0.7.0](https://github.com/ably/ably-control-go/tree/v0.7.0)
 
 [Full Changelog](https://github.com/ably/ably-control-go/compare/v0.7.0..v0.6.0)
