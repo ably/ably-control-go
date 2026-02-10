@@ -45,7 +45,6 @@ func TestRuleAmqpExternal(t *testing.T) {
 	target := &AmqpExternalTarget{
 		Url:                "amqps://test.com",
 		RoutingKey:         "key",
-		Exchange:           "exchange",
 		MandatoryRoute:     true,
 		PersistentMessages: true,
 		MessageTTL:         50,
@@ -234,8 +233,16 @@ func testRule(t *testing.T, target Target) {
 	assert.NoError(t, err)
 	assert.Equal(t, rule.RequestMode, r.RequestMode)
 	assert.Equal(t, rule.Source, r.Source)
-	assert.Equal(t, rule.Target, r.Target)
 	assert.Equal(t, rule.Target.TargetType(), r.Target.TargetType())
+
+	// TlsTrustCerts is write-only in the API — accepted on create but never
+	// returned. Nil it out on the sent target before comparing so the full
+	// struct equality check still works.
+	if p, ok := rule.Target.(*PulsarTarget); ok {
+		assert.Nil(t, r.Target.(*PulsarTarget).TlsTrustCerts, "API should not echo back TlsTrustCerts")
+		p.TlsTrustCerts = nil
+	}
+	assert.Equal(t, rule.Target, r.Target)
 	assert.NotEmpty(t, r.ID)
 	assert.NotEmpty(t, r.AppID)
 	assert.NotEmpty(t, r.Version)
