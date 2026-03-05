@@ -15,6 +15,7 @@
 //   - Integration rules
 //
 // Control API is currently in Preview.
+// Deprecated: Use github.com/org/terraform-provider-ably/client instead.
 package control
 
 import (
@@ -156,7 +157,7 @@ func (c *Client) AppendAblyAgent(product, version string) {
 	c.ablyAgent = fmt.Sprintf("%s %s/%s", c.ablyAgent, product, version)
 }
 
-func (c *Client) request(method, path string, in, out interface{}) error {
+func (c *Client) request(method, path string, in, out any) error {
 	var body []byte
 	if in != nil {
 		var err error
@@ -170,11 +171,16 @@ func (c *Client) request(method, path string, in, out interface{}) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.token)
-	req.Header.Set("Ably-Agent", c.ablyAgent)
 	if in != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+
+	return c.requestRaw(req, path, out)
+}
+
+func (c *Client) requestRaw(req *retryablehttp.Request, path string, out any) error {
+	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("Ably-Agent", c.ablyAgent)
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
@@ -183,20 +189,27 @@ func (c *Client) request(method, path string, in, out interface{}) error {
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		respBody, _ := io.ReadAll(res.Body)
+		respBody, readErr := io.ReadAll(res.Body)
+		if readErr != nil {
+			return ErrorInfo{
+				Message:    fmt.Sprintf("failed to read error response body: %v", readErr),
+				Code:       0,
+				StatusCode: res.StatusCode,
+				APIPath:    path,
+			}
+		}
 		var errorInfo ErrorInfo
 		err = json.Unmarshal(respBody, &errorInfo)
 		if err == nil {
 			errorInfo.APIPath = path
 			return errorInfo
-		} else {
-			return ErrorInfo{
-				Message:    string(respBody),
-				Code:       0,
-				StatusCode: res.StatusCode,
-				HRef:       "",
-				APIPath:    path,
-			}
+		}
+		return ErrorInfo{
+			Message:    string(respBody),
+			Code:       0,
+			StatusCode: res.StatusCode,
+			HRef:       "",
+			APIPath:    path,
 		}
 	}
 	if out != nil {

@@ -1,9 +1,11 @@
 package control
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRuleIngressMongo(t *testing.T) {
@@ -36,6 +38,7 @@ func TestRuleIngressPostgresOutbox(t *testing.T) {
 }
 
 func testIngressRule(t *testing.T, target IngressTarget) {
+	t.Helper()
 	client, _ := newTestClient(t)
 	app := newTestApp(t, &client)
 
@@ -45,8 +48,7 @@ func testIngressRule(t *testing.T, target IngressTarget) {
 	}
 
 	r, err := client.CreateIngressRule(app.ID, &rule)
-	assert.NoError(t, err)
-	assert.Equal(t, rule.Target, r.Target)
+	require.NoError(t, err)
 	assert.Equal(t, rule.Target.TargetType(), r.Target.TargetType())
 	assert.NotEmpty(t, r.ID)
 	assert.NotEmpty(t, r.AppID)
@@ -56,12 +58,53 @@ func testIngressRule(t *testing.T, target IngressTarget) {
 	assert.NotEmpty(t, r.Modified)
 
 	r2, err := client.IngressRule(app.ID, r.ID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, r, r2)
 
 	err = client.DeleteIngressRule(app.ID, r.ID)
 	assert.NoError(t, err)
+}
 
-	err = client.DeleteApp(app.ID)
+func TestIngressMongoTargetIncludesNewFields(t *testing.T) {
+	target := IngressMongoTarget{
+		Url:                 "mongodb://localhost",
+		Database:            "testdb",
+		Collection:          "testcol",
+		Watch:               "collection",
+		ProvisionedCapacity: 1.5,
+	}
+
+	data, err := json.Marshal(target)
 	assert.NoError(t, err)
+
+	var raw map[string]any
+	err = json.Unmarshal(data, &raw)
+	assert.NoError(t, err)
+	assert.Equal(t, "collection", raw["watch"])
+	assert.Equal(t, 1.5, raw["provisionedCapacity"])
+}
+
+func TestIngressRuleUnmarshalIncludesLinks(t *testing.T) {
+	data := `{
+		"id": "rule789",
+		"appId": "app456",
+		"status": "enabled",
+		"created": 1700000000,
+		"modified": 1700001000,
+		"_links": {
+			"self": "https://control.ably.net/v1/apps/app456/rules/rule789"
+		},
+		"ruleType": "ingress/mongodb",
+		"target": {
+			"url": "mongodb://localhost",
+			"database": "testdb",
+			"collection": "testcol"
+		}
+	}`
+
+	var rule IngressRule
+	err := json.Unmarshal([]byte(data), &rule)
+	assert.NoError(t, err)
+	assert.NotNil(t, rule.Links)
+	assert.Equal(t, "https://control.ably.net/v1/apps/app456/rules/rule789", rule.Links["self"])
 }

@@ -24,7 +24,7 @@ type Stomp struct {
 	// The host type for the queue.
 	Host string `json:"host,omitempty"`
 	// Destination queue.
-	Destination string `destination:"uri,omitempty"`
+	Destination string `json:"destination,omitempty"`
 }
 
 // Messages contains messages in a queue.
@@ -99,7 +99,7 @@ func (c *Client) Queues(appID string) ([]Queue, error) {
 // CreateQueue creates a queue for the application specified by application ID.
 func (c *Client) CreateQueue(appID string, queue *NewQueue) (Queue, error) {
 	var out Queue
-	err := c.request("POST", "/apps/"+appID+"/queues", &queue, &out)
+	err := c.request("POST", "/apps/"+appID+"/queues", queue, &out)
 	return out, err
 }
 

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestKeys(t *testing.T) {
@@ -21,7 +22,7 @@ func TestKeys(t *testing.T) {
 	}
 
 	k, err := client.CreateKey(app.ID, &key)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key.Name, k.Name)
 	assert.Equal(t, key.Capability, k.Capability)
 	assert.Equal(t, k.Status, 0)
@@ -33,7 +34,7 @@ func TestKeys(t *testing.T) {
 	assert.NotEmpty(t, k.Key)
 
 	keys, err := client.Keys(app.ID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotEmpty(t, keys)
 
 	key = NewKey{
@@ -43,14 +44,11 @@ func TestKeys(t *testing.T) {
 	}
 
 	k, err = client.UpdateKey(app.ID, k.ID, &key)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, key.Name, k.Name)
 	assert.Equal(t, key.Capability, k.Capability)
 	assert.Equal(t, key.RevocableTokens, k.RevocableTokens)
 
 	err = client.RevokeKey(app.ID, k.ID)
-	assert.NoError(t, err)
-
-	err = client.DeleteApp(app.ID)
 	assert.NoError(t, err)
 }

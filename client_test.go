@@ -12,68 +12,52 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var token string
 var url string = API_URL
-var apps []string
 
 func TestMain(m *testing.M) {
 	token = os.Getenv("ABLY_ACCOUNT_TOKEN")
-	rand.Seed(time.Now().UnixNano())
 
 	if os.Getenv("ABLY_CONTROL_URL") != "" {
 		url = os.Getenv("ABLY_CONTROL_URL")
 	}
 
-	// Attempt to clean up apps if anything went wrong (only if not skipping integration tests)
-	if os.Getenv("SKIP_INTEGRATION") == "" && token != "" {
-		client, _, err := NewClientWithURL(token, url)
-		if err == nil {
-			for _, v := range apps {
-				_ = client.DeleteApp(v)
-			}
-		}
-	}
-
-	code := m.Run()
-	os.Exit(code)
+	os.Exit(m.Run())
 }
 
-// skipIntegrationTest skips tests that interact with the API if SKIP_INTEGRATION is set.
 func skipIntegrationTest(t *testing.T) {
+	t.Helper()
 	if os.Getenv("SKIP_INTEGRATION") != "" {
 		t.Skip("SKIP_INTEGRATION is set, skipping integration test")
 	}
 }
 
 func newTestApp(t *testing.T, client *Client) App {
+	t.Helper()
 	n := rand.Uint64()
 	name := "test-" + fmt.Sprint(n)
 	t.Logf("creating app with name: %s", name)
-	app := NewApp{
+	app, err := client.CreateApp(&NewApp{
 		Name:   name,
 		Status: "enabled",
-		//TLSOnly:                false,
-		FcmKey:                 "",
-		FcmServiceAccount:      "",
-		FcmProjectId:           "",
-		ApnsCertificate:        "",
-		ApnsPrivateKey:         "",
-		ApnsUseSandboxEndpoint: false,
-	}
-	app_ret, err := client.CreateApp(&app)
+	})
+	require.NoError(t, err)
 
-	assert.NoError(t, err)
-	apps = append(apps, app.ID)
+	t.Cleanup(func() {
+		client.DeleteApp(app.ID)
+	})
 
-	return app_ret
+	return app
 }
 
 func newTestClient(t *testing.T) (Client, Me) {
+	t.Helper()
 	skipIntegrationTest(t)
 	client, me, err := NewClientWithURL(token, url)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	return client, me
 }
 

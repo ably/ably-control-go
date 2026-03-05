@@ -5,13 +5,17 @@ import (
 	"fmt"
 )
 
-type NewRuleNoJson NewRule
+type newRuleNoJSON NewRule
 
-// PularAuthenticationMode is an enum of authentication modes used by Pulsar rules.
-type PularAuthenticationMode string
+// PulsarAuthenticationMode is an enum of authentication modes used by Pulsar rules.
+type PulsarAuthenticationMode string
+
+// Deprecated: PularAuthenticationMode is a misspelling of PulsarAuthenticationMode.
+// Use PulsarAuthenticationMode instead.
+type PularAuthenticationMode = PulsarAuthenticationMode
 
 // AuthToken AuthenticationMode.
-const AuthToken PularAuthenticationMode = "token"
+const AuthToken PulsarAuthenticationMode = "token"
 
 // SaslMechanism is the hash type used for Sasl authentication.
 type SaslMechanism string
@@ -19,11 +23,52 @@ type SaslMechanism string
 // Plain do not use a hash.
 const Plain SaslMechanism = "plain"
 
-// Scram_sha_256 use sha256 hashes.
+// ScramSha256 uses sha256 hashes.
+const ScramSha256 SaslMechanism = "scram-sha-256"
+
+// ScramSha512 uses sha512 hashes.
+const ScramSha512 SaslMechanism = "scram-sha-512"
+
+// Deprecated: Scram_sha_256 has an incorrect value ("scra-sha-256", missing 'm').
+// Use ScramSha256 ("scram-sha-256") instead.
 const Scram_sha_256 SaslMechanism = "scra-sha-256"
 
-// Scram_sha_512 use sha512 hashes.
+// Deprecated: Scram_sha_512 has an incorrect value ("scra-sha-512", missing 'm').
+// Use ScramSha512 ("scram-sha-512") instead.
 const Scram_sha_512 SaslMechanism = "scra-sha-512"
+
+// InvocationMode determines when a rule is invoked.
+type InvocationMode string
+
+// BeforePublish is invoked before a message is published.
+const BeforePublish InvocationMode = "BEFORE_PUBLISH"
+
+// AfterPublish is invoked after a message is published.
+const AfterPublish InvocationMode = "AFTER_PUBLISH"
+
+// FailedAction determines what happens when a before-publish rule fails.
+type FailedAction string
+
+const FailedActionReject FailedAction = "REJECT"
+const FailedActionPublish FailedAction = "PUBLISH"
+
+// TooManyRequestsAction determines behavior on rate limiting.
+type TooManyRequestsAction string
+
+const TooManyRequestsRetry TooManyRequestsAction = "RETRY"
+const TooManyRequestsFail TooManyRequestsAction = "FAIL"
+
+// BeforePublishConfig configures before-publish rule behavior.
+type BeforePublishConfig struct {
+	// Timeout in milliseconds for retries (0-10000).
+	RetryTimeout int `json:"retryTimeout"`
+	// Maximum number of retries (0-10).
+	MaxRetries int `json:"maxRetries"`
+	// Action to take when the rule fails.
+	FailedAction FailedAction `json:"failedAction"`
+	// Action to take when rate limited.
+	TooManyRequestsAction TooManyRequestsAction `json:"tooManyRequestsAction"`
+}
 
 // Format is the format used for encoding.
 type Format string
@@ -70,9 +115,17 @@ type Rule struct {
 	// The status of the rule. Rules can be enabled or disabled.
 	Status string `json:"status,omitempty"`
 	// Unix timestamp representing the date and time of creation of the rule.
-	Created int `json:"created"`
+	Created int64 `json:"created"`
 	// Unix timestamp representing the date and time of last modification of the rule.
-	Modified int `json:"modified"`
+	Modified int64 `json:"modified"`
+	// Links related to this resource.
+	Links map[string]any `json:"_links,omitempty"`
+	// The invocation mode for the rule.
+	InvocationMode InvocationMode `json:"invocationMode,omitempty"`
+	// Configuration for before-publish rules.
+	BeforePublishConfig *BeforePublishConfig `json:"beforePublishConfig,omitempty"`
+	// A regex filter for chat room channels.
+	ChatRoomFilter string `json:"chatRoomFilter,omitempty"`
 	// RequestMode. You can read more about the difference between single and batched
 	// events in the Ably documentation. https://ably.com/documentation/general/events#batching
 	RequestMode RequestMode `json:"requestMode,omitempty"`
@@ -97,9 +150,6 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 	case "pulsar":
 		var t PulsarTarget
 		err = json.Unmarshal(raw.Target, &t)
-		if err != nil {
-			fmt.Println(err, string(raw.Target))
-		}
 		r.Target = &t
 	case "kafka":
 		var t KafkaTarget
@@ -134,7 +184,7 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 		err = json.Unmarshal(raw.Target, &t)
 		r.Target = &t
 	case "http/cloudflare-worker":
-		var t HttpCloudfareWorkerTarget
+		var t HttpCloudflareWorkerTarget
 		err = json.Unmarshal(raw.Target, &t)
 		r.Target = &t
 	case "http/zapier":
@@ -149,8 +199,39 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 		var t HttpTarget
 		err = json.Unmarshal(raw.Target, &t)
 		r.Target = &t
+	case "http/before-publish":
+		var t HttpBeforePublishTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "aws/lambda/before-publish":
+		var t AwsLambdaBeforePublishTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "hive/text-model-only":
+		var t HiveTextModelOnlyTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "hive/dashboard":
+		var t HiveDashboardTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "bodyguard/text-moderation":
+		var t BodyguardTextModerationTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "tisane/text-moderation":
+		var t TisaneTextModerationTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "azure/text-moderation":
+		var t AzureTextModerationTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
 	default:
-		return fmt.Errorf("unknown rule type \"%s\"", raw.RuleType)
+		r.Target = &UnsupportedTarget{
+			ruleType: raw.RuleType,
+			Raw:      raw.Target,
+		}
 	}
 
 	if err != nil {
@@ -163,6 +244,10 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 	r.Status = raw.Status
 	r.Created = raw.Created
 	r.Modified = raw.Modified
+	r.Links = raw.Links
+	r.InvocationMode = raw.InvocationMode
+	r.BeforePublishConfig = raw.BeforePublishConfig
+	r.ChatRoomFilter = raw.ChatRoomFilter
 	r.RequestMode = raw.RequestMode
 	r.Source = raw.Source
 
@@ -170,16 +255,20 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 }
 
 type rawRule struct {
-	ID          string          `json:"id,omitempty"`
-	AppID       string          `json:"appId,omitempty"`
-	Version     string          `json:"version,omitempty"`
-	Status      string          `json:"status,omitempty"`
-	Created     int             `json:"created"`
-	Modified    int             `json:"modified"`
-	RuleType    string          `json:"ruleType,omitempty"`
-	RequestMode RequestMode     `json:"requestMode,omitempty"`
-	Source      Source          `json:"source"`
-	Target      json.RawMessage `json:"target"`
+	ID                  string               `json:"id,omitempty"`
+	AppID               string               `json:"appId,omitempty"`
+	Version             string               `json:"version,omitempty"`
+	Status              string               `json:"status,omitempty"`
+	Created             int64                `json:"created"`
+	Modified            int64                `json:"modified"`
+	Links               map[string]any       `json:"_links,omitempty"`
+	InvocationMode      InvocationMode       `json:"invocationMode,omitempty"`
+	BeforePublishConfig *BeforePublishConfig `json:"beforePublishConfig,omitempty"`
+	ChatRoomFilter      string               `json:"chatRoomFilter,omitempty"`
+	RuleType            string               `json:"ruleType,omitempty"`
+	RequestMode         RequestMode          `json:"requestMode,omitempty"`
+	Source              Source               `json:"source"`
+	Target              json.RawMessage      `json:"target"`
 }
 
 // RuleType gets the type of target this rule has.
@@ -213,13 +302,19 @@ type Header struct {
 
 type rawNewRule struct {
 	RuleType string `json:"ruleType,omitempty"`
-	*NewRuleNoJson
+	*newRuleNoJSON
 }
 
 // NewRule is used to create a new rule.
 type NewRule struct {
 	// The status of the rule. Rules can be enabled or disabled.
 	Status string `json:"status,omitempty"`
+	// The invocation mode for the rule.
+	InvocationMode InvocationMode `json:"invocationMode,omitempty"`
+	// Configuration for before-publish rules.
+	BeforePublishConfig *BeforePublishConfig `json:"beforePublishConfig,omitempty"`
+	// A regex filter for chat room channels.
+	ChatRoomFilter string `json:"chatRoomFilter,omitempty"`
 	// RequestMode. You can read more about the difference between single and batched
 	// events in the Ably documentation. https://ably.com/documentation/general/events#batching
 	RequestMode RequestMode `json:"requestMode,omitempty"`
@@ -231,7 +326,7 @@ type NewRule struct {
 
 func (r *NewRule) MarshalJSON() ([]byte, error) {
 	raw := rawNewRule{
-		RuleType: r.Target.TargetType(), NewRuleNoJson: (*NewRuleNoJson)(r)}
+		RuleType: r.Target.TargetType(), newRuleNoJSON: (*newRuleNoJSON)(r)}
 
 	return json.Marshal(&raw)
 }
@@ -239,7 +334,7 @@ func (r *NewRule) MarshalJSON() ([]byte, error) {
 // PulsarAuthentication is used to authenticate for Pulsar rules
 type PulsarAuthentication struct {
 	// Authentication mode.
-	AuthenticationMode PularAuthenticationMode `json:"authenticationMode,omitempty"`
+	AuthenticationMode PulsarAuthenticationMode `json:"authenticationMode,omitempty"`
 	// The JWT string.
 	Token string `json:"token,omitempty"`
 }
@@ -274,7 +369,7 @@ func (a *AwsAuthentication) UnmarshalJSON(data []byte) error {
 	var m map[string]string = make(map[string]string)
 	err := json.Unmarshal(data, &m)
 	if err != nil {
-		return nil
+		return err
 	}
 	mode := m["authenticationMode"]
 	switch mode {
@@ -351,7 +446,7 @@ func (a *AuthenticationModeCredentials) AuthenticationMode() string {
 	return "credentials"
 }
 
-// PulsarTarget is the type used for Pular rules.
+// PulsarTarget is the type used for Pulsar rules.
 type PulsarTarget struct {
 	// The optional routing key (partition key) used
 	// to publish messages. Supports interpolation as described in the Ably FAQs.
@@ -413,6 +508,8 @@ func (s *KafkaTarget) TargetType() string {
 type AmqpExternalTarget struct {
 	// The webhook URL that Ably will POST events to.
 	Url string `json:"url,omitempty"`
+	// The name of the AMQP exchange to publish to. This is only applicable for topic exchanges.
+	Exchange string `json:"exchange,omitempty"`
 	// The AMQP routing key. The routing key is used by the AMQP exchange to route messages to a
 	// physical queue. See this Ably knowledge base article for details.
 	// https://knowledge.ably.com/what-is-the-format-of-the-routingkey-for-an-amqp-or-kinesis-reactor-rule
@@ -527,6 +624,8 @@ type AwsLambdaTarget struct {
 	// Queue/Firehose rule. For everything besides Webhooks, you can ensure you only get the raw payload by
 	// unchecking "Enveloped" when setting up the rule.
 	Enveloped bool `json:"enveloped"`
+	// JSON provides a simpler text-based encoding, whereas MsgPack provides a more efficient binary encoding.
+	Format Format `json:"format,omitempty"`
 }
 
 // AwsLambdaTarget implements the Target interface.
@@ -534,7 +633,7 @@ func (s *AwsLambdaTarget) TargetType() string {
 	return "aws/lambda"
 }
 
-// HttpGoogleCloudFunctionTarget is type type used for http/goole-cloud-function targets.
+// HttpGoogleCloudFunctionTarget is the type used for http/google-cloud-function targets.
 type HttpGoogleCloudFunctionTarget struct {
 	// The region in which your Google Cloud Function is hosted. See the Google documentation for more details.
 	// https://cloud.google.com/compute/docs/regions-zones/
@@ -591,8 +690,8 @@ func (s *HttpAzureFunctionTarget) TargetType() string {
 	return "http/azure-function"
 }
 
-// HttpCloudfareWorkerTarget is the type used for http/cloudflare-worker rules.
-type HttpCloudfareWorkerTarget struct {
+// HttpCloudflareWorkerTarget is the type used for http/cloudflare-worker rules.
+type HttpCloudflareWorkerTarget struct {
 	// The webhook URL that Ably will POST events to.
 	Url string `json:"url,omitempty"`
 	// If you have additional information to send, you'll need to include the relevant headers.
@@ -603,10 +702,14 @@ type HttpCloudfareWorkerTarget struct {
 	SigningKeyID string `json:"signingKeyId"`
 }
 
-// HttpCloudfareWorkerTarget implements the Target interface.
-func (s *HttpCloudfareWorkerTarget) TargetType() string {
+// HttpCloudflareWorkerTarget implements the Target interface.
+func (s *HttpCloudflareWorkerTarget) TargetType() string {
 	return "http/cloudflare-worker"
 }
+
+// Deprecated: HttpCloudfareWorkerTarget is a misspelling of HttpCloudflareWorkerTarget.
+// Use HttpCloudflareWorkerTarget instead.
+type HttpCloudfareWorkerTarget = HttpCloudflareWorkerTarget
 
 // HttpZapierTarget is the type used for http/zapier rules.
 type HttpZapierTarget struct {
@@ -664,35 +767,166 @@ func (s *HttpTarget) TargetType() string {
 	return "http"
 }
 
-// Lists the rules for the application specified by the application ID.
+// HttpBeforePublishTarget is the type used for http/before-publish rules.
+type HttpBeforePublishTarget struct {
+	// The webhook URL that Ably will POST events to.
+	Url string `json:"url,omitempty"`
+	// If you have additional information to send, you'll need to include the relevant headers.
+	Headers []Header `json:"headers,omitempty"`
+	// JSON provides a simpler text-based encoding, whereas MsgPack provides a more efficient binary encoding.
+	Format Format `json:"format,omitempty"`
+}
+
+// HttpBeforePublishTarget implements the Target interface.
+func (s *HttpBeforePublishTarget) TargetType() string {
+	return "http/before-publish"
+}
+
+// AwsLambdaBeforePublishTarget is the type used for aws/lambda/before-publish rules.
+type AwsLambdaBeforePublishTarget struct {
+	// The region in which your AWS Lambda Function is hosted.
+	Region string `json:"region,omitempty"`
+	// The name of your AWS Lambda Function.
+	FunctionName string `json:"functionName,omitempty"`
+	// Authentication details.
+	Authentication AwsAuthentication `json:"authentication"`
+}
+
+// AwsLambdaBeforePublishTarget implements the Target interface.
+func (s *AwsLambdaBeforePublishTarget) TargetType() string {
+	return "aws/lambda/before-publish"
+}
+
+// HiveTextModelOnlyTarget is the type used for hive/text-model-only rules.
+type HiveTextModelOnlyTarget struct {
+	// The Hive API key.
+	ApiKey string `json:"apiKey,omitempty"`
+	// The URL of the Hive model.
+	ModelUrl string `json:"modelUrl,omitempty"`
+	// Thresholds for content moderation categories (values 1-3).
+	Thresholds map[string]int `json:"thresholds,omitempty"`
+}
+
+// HiveTextModelOnlyTarget implements the Target interface.
+func (s *HiveTextModelOnlyTarget) TargetType() string {
+	return "hive/text-model-only"
+}
+
+// HiveDashboardTarget is the type used for hive/dashboard rules.
+type HiveDashboardTarget struct {
+	// The Hive API key.
+	ApiKey string `json:"apiKey,omitempty"`
+	// Whether to check watch lists.
+	CheckWatchLists *bool `json:"checkWatchLists,omitempty"`
+}
+
+// HiveDashboardTarget implements the Target interface.
+func (s *HiveDashboardTarget) TargetType() string {
+	return "hive/dashboard"
+}
+
+// BodyguardTextModerationTarget is the type used for bodyguard/text-moderation rules.
+type BodyguardTextModerationTarget struct {
+	// The Bodyguard API key.
+	ApiKey string `json:"apiKey,omitempty"`
+	// The Bodyguard channel ID.
+	ChannelId string `json:"channelId,omitempty"`
+	// The Bodyguard API URL.
+	ApiUrl string `json:"apiUrl,omitempty"`
+	// The default language for content moderation.
+	DefaultLanguage string `json:"defaultLanguage,omitempty"`
+}
+
+// BodyguardTextModerationTarget implements the Target interface.
+func (s *BodyguardTextModerationTarget) TargetType() string {
+	return "bodyguard/text-moderation"
+}
+
+// TisaneTextModerationTarget is the type used for tisane/text-moderation rules.
+type TisaneTextModerationTarget struct {
+	// The Tisane API key.
+	ApiKey string `json:"apiKey,omitempty"`
+	// The URL of the Tisane model.
+	ModelUrl string `json:"modelUrl,omitempty"`
+	// Thresholds for content moderation categories (values 0-3).
+	Thresholds map[string]int `json:"thresholds,omitempty"`
+	// The default language for content moderation.
+	DefaultLanguage string `json:"defaultLanguage,omitempty"`
+}
+
+// TisaneTextModerationTarget implements the Target interface.
+func (s *TisaneTextModerationTarget) TargetType() string {
+	return "tisane/text-moderation"
+}
+
+// AzureTextModerationTarget is the type used for azure/text-moderation rules.
+type AzureTextModerationTarget struct {
+	// The Azure API key.
+	ApiKey string `json:"apiKey,omitempty"`
+	// The Azure endpoint URL.
+	Endpoint string `json:"endpoint,omitempty"`
+	// Thresholds for content moderation categories (values 0-7).
+	Thresholds map[string]int `json:"thresholds,omitempty"`
+}
+
+// AzureTextModerationTarget implements the Target interface.
+func (s *AzureTextModerationTarget) TargetType() string {
+	return "azure/text-moderation"
+}
+
+// UnsupportedTarget is used for rule types that are not yet supported by this library.
+type UnsupportedTarget struct {
+	// The rule type string for this unsupported target.
+	ruleType string
+	// The raw JSON of the target, preserved for re-marshaling.
+	Raw json.RawMessage `json:"-"`
+	// The webhook URL if present.
+	Url string `json:"url,omitempty"`
+}
+
+// UnsupportedTarget implements the Target interface.
+func (s *UnsupportedTarget) TargetType() string {
+	return s.ruleType
+}
+
+// MarshalJSON marshals the raw JSON for unsupported targets.
+func (s *UnsupportedTarget) MarshalJSON() ([]byte, error) {
+	if s.Raw != nil {
+		return s.Raw, nil
+	}
+	type Alias UnsupportedTarget
+	return json.Marshal((*Alias)(s))
+}
+
+// Rules lists the rules for the application specified by the application ID.
 func (c *Client) Rules(appID string) ([]Rule, error) {
 	var rules []Rule
 	err := c.request("GET", "/apps/"+appID+"/rules", nil, &rules)
 	return rules, err
 }
 
-// Returns the rule specified by the rule ID, for the application specified by application ID.
+// Rule returns the rule specified by the rule ID, for the application specified by application ID.
 func (c *Client) Rule(appID, ruleID string) (Rule, error) {
 	var rule Rule
 	err := c.request("GET", "/apps/"+appID+"/rules/"+ruleID, nil, &rule)
 	return rule, err
 }
 
-// Creates a rule for the application with the specified application ID.
+// CreateRule creates a rule for the application with the specified application ID.
 func (c *Client) CreateRule(appID string, rule *NewRule) (Rule, error) {
 	var out Rule
-	err := c.request("POST", "/apps/"+appID+"/rules", &rule, &out)
+	err := c.request("POST", "/apps/"+appID+"/rules", rule, &out)
 	return out, err
 }
 
-// Updates the rule specified by the rule ID, for the application specified by application ID.
+// UpdateRule updates the rule specified by the rule ID, for the application specified by application ID.
 func (c *Client) UpdateRule(appID, ruleID string, rule *NewRule) (Rule, error) {
 	var out Rule
-	err := c.request("PATCH", "/apps/"+appID+"/rules/"+ruleID, &rule, &out)
+	err := c.request("PATCH", "/apps/"+appID+"/rules/"+ruleID, rule, &out)
 	return out, err
 }
 
-// Deletes the rule specified by the rule ID, for the application specified by application ID.
+// DeleteRule deletes the rule specified by the rule ID, for the application specified by application ID.
 func (c *Client) DeleteRule(appID, ruleID string) error {
 	err := c.request("DELETE", "/apps/"+appID+"/rules/"+ruleID, nil, nil)
 	return err

@@ -39,10 +39,20 @@ type Namespace struct {
 	ConflationEnabled bool `json:"conflationEnabled"`
 	// The interval in milliseconds at which messages are conflated. This
 	// determines how frequently messages are combined into a single message.
-	ConflationInterval *int `json:"conflationInterval"`
+	ConflationInterval *int `json:"conflationInterval,omitempty"`
 	// The key used to determine which messages should be conflated. Messages
 	// with the same conflation key will be combined into a single message.
 	ConflationKey string `json:"conflationKey"`
+	// If true, messages published to channels in this namespace are mutable.
+	MutableMessages bool `json:"mutableMessages"`
+	// If true, channels in this namespace will be added to the channel registry.
+	PopulateChannelRegistry bool `json:"populateChannelRegistry"`
+	// The Ably application ID (response only).
+	AppID string `json:"appId,omitempty"`
+	// Unix timestamp representing the date and time of creation (response only).
+	Created int64 `json:"created,omitempty"`
+	// Unix timestamp representing the date and time of last modification (response only).
+	Modified int64 `json:"modified,omitempty"`
 }
 
 // Namespaces lists the namespaces for the specified application ID.
@@ -55,7 +65,7 @@ func (c *Client) Namespaces(appID string) ([]Namespace, error) {
 // CreateNamespace creates a namespace for the specified application ID.
 func (c *Client) CreateNamespace(appID string, namespace *Namespace) (Namespace, error) {
 	var out Namespace
-	err := c.request("POST", "/apps/"+appID+"/namespaces", &namespace, &out)
+	err := c.request("POST", "/apps/"+appID+"/namespaces", namespace, &out)
 	return out, err
 }
 
