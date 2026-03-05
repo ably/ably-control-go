@@ -16,9 +16,9 @@ type Key struct {
 	// can be found in the Ably documentation https://ably.com/documentation/core-features/authentication#capabilities-explained.
 	Capability map[string][]string `json:"capability"`
 	// Unix timestamp representing the date and time of creation of the key.
-	Created int `json:"created"`
+	Created int64 `json:"created"`
 	// Unix timestamp representing the date and time of the last modification of the key.
-	Modified int `json:"modified"`
+	Modified int64 `json:"modified"`
 	// Token revocation is a security mechanism allowing an app to invalidate authentication tokens,
 	// primarily used against malicious clients. Implementation sets tokens' maximum time-to-live (TTL) to one hour.
 	RevocableTokens bool `json:"revocableTokens"`
@@ -46,14 +46,14 @@ func (c *Client) Keys(appID string) ([]Key, error) {
 // CreateKey creates an application with the specified properties.
 func (c *Client) CreateKey(appID string, key *NewKey) (Key, error) {
 	var out Key
-	err := c.request("POST", "/apps/"+appID+"/keys", &key, &out)
+	err := c.request("POST", "/apps/"+appID+"/keys", key, &out)
 	return out, err
 }
 
 // UpdateKey updates the API key with the specified key ID.
 func (c *Client) UpdateKey(appID, keyID string, key *NewKey) (Key, error) {
 	var out Key
-	err := c.request("PATCH", "/apps/"+appID+"/keys/"+keyID, &key, &out)
+	err := c.request("PATCH", "/apps/"+appID+"/keys/"+keyID, key, &out)
 	return out, err
 }
 

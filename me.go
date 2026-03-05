@@ -4,9 +4,9 @@ package control
 type Me struct {
 	// The access token used to authenticate.
 	Token Token `json:"token"`
-	// The user accociated with the used token.
+	// The user associated with the used token.
 	User User `json:"user"`
-	// The account accociated with the used token.
+	// The account associated with the used token.
 	Account Account `json:"account"`
 }
 
@@ -28,7 +28,7 @@ type User struct {
 	Email string `json:"email"`
 }
 
-// The account detials of an Ably account.
+// The account details of an Ably account.
 type Account struct {
 	// The ID of the account.
 	ID string `json:"id"`

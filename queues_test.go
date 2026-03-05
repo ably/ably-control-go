@@ -1,11 +1,13 @@
 package control
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestQueues(t *testing.T) {
@@ -22,26 +24,38 @@ func TestQueues(t *testing.T) {
 	}
 
 	q, err := client.CreateQueue(app.ID, &queue)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, queue.Name, q.Name)
 	assert.Equal(t, queue.Ttl, q.Ttl)
 	assert.Equal(t, queue.MaxLength, q.MaxLength)
 	assert.Equal(t, queue.Region, q.Region)
 
 	queues, err := client.Queues(app.ID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotEmpty(t, queues)
-
-	queue = NewQueue{
-		Name:      name + "-changed",
-		Ttl:       40,
-		MaxLength: 20,
-		Region:    UsEast1A,
-	}
 
 	err = client.DeleteQueue(app.ID, q.ID)
 	assert.NoError(t, err)
+}
 
-	err = client.DeleteApp(app.ID)
+func TestStompDestinationJsonRoundTrip(t *testing.T) {
+	original := Stomp{
+		Uri:         "stomp://localhost:61613",
+		Host:        "my-host",
+		Destination: "/queue/test",
+	}
+
+	data, err := json.Marshal(original)
 	assert.NoError(t, err)
+
+	var raw map[string]any
+	err = json.Unmarshal(data, &raw)
+	assert.NoError(t, err)
+	assert.Contains(t, raw, "destination", "Stomp.Destination should marshal with json key 'destination'")
+	assert.Equal(t, "/queue/test", raw["destination"])
+
+	var decoded Stomp
+	err = json.Unmarshal(data, &decoded)
+	assert.NoError(t, err)
+	assert.Equal(t, original, decoded)
 }

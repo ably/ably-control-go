@@ -58,6 +58,12 @@ type App struct {
 	ApnsPrivateKey string `json:"apnsPrivateKey"`
 	// Use the Apple Push Notification service sandbox endpoint.
 	ApnsUseSandboxEndpoint bool `json:"apnsUseSandboxEndpoint"`
+	// Unix timestamp representing the date and time of creation.
+	Created int64 `json:"created"`
+	// Unix timestamp representing the date and time of last modification.
+	Modified int64 `json:"modified"`
+	// Links related to this resource.
+	Links map[string]any `json:"_links,omitempty"`
 }
 
 // Apps fetches a list of all your Ably apps.

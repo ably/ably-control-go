@@ -15,9 +15,9 @@ type ErrorInfo struct {
 	// The URL to documentation about the error code.
 	HRef string `json:"href"`
 	// Any additional details about the error message.
-	Details map[string][]string `json:"details"`
+	Details map[string]any `json:"details"`
 	// The API path that resulted in this error.
-	APIPath string
+	APIPath string `json:"-"`
 }
 
 // ErrorInfo implements the Error interface.
@@ -34,8 +34,13 @@ func (e ErrorInfo) Error() string {
 	if len(e.Details) != 0 {
 		for k, v := range e.Details {
 			err += fmt.Sprintf("\n  %s:", k)
-			for _, str := range v {
-				err += fmt.Sprintf("\n    %s", str)
+			switch val := v.(type) {
+			case []any:
+				for _, item := range val {
+					err += fmt.Sprintf("\n    %v", item)
+				}
+			default:
+				err += fmt.Sprintf("\n    %v", val)
 			}
 		}
 	}

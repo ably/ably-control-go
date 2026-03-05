@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-type NewIngressRuleNoJson NewIngressRule
+type newIngressRuleNoJSON NewIngressRule
 
 // IngressRule is a struct representing an Ably Ingress rule.
 type IngressRule struct {
@@ -19,9 +19,11 @@ type IngressRule struct {
 	// The status of the rule. Rules can be enabled or disabled.
 	Status string `json:"status,omitempty"`
 	// Unix timestamp representing the date and time of creation of the rule.
-	Created int `json:"created"`
+	Created int64 `json:"created"`
 	// Unix timestamp representing the date and time of last modification of the rule.
-	Modified int `json:"modified"`
+	Modified int64 `json:"modified"`
+	// Links related to this resource.
+	Links map[string]any `json:"_links,omitempty"`
 	// The rule target.
 	Target IngressTarget `json:"target"`
 }
@@ -60,6 +62,7 @@ func (r *IngressRule) UnmarshalJSON(data []byte) error {
 	r.Status = raw.Status
 	r.Created = raw.Created
 	r.Modified = raw.Modified
+	r.Links = raw.Links
 
 	return nil
 }
@@ -69,8 +72,9 @@ type rawIngressRule struct {
 	AppID    string          `json:"appId,omitempty"`
 	Version  string          `json:"version,omitempty"`
 	Status   string          `json:"status,omitempty"`
-	Created  int             `json:"created"`
-	Modified int             `json:"modified"`
+	Created  int64           `json:"created"`
+	Modified int64           `json:"modified"`
+	Links    map[string]any  `json:"_links,omitempty"`
 	RuleType string          `json:"ruleType,omitempty"`
 	Target   json.RawMessage `json:"target"`
 }
@@ -87,10 +91,10 @@ type IngressTarget interface {
 
 type rawNewIngressRule struct {
 	RuleType string `json:"ruleType,omitempty"`
-	*NewIngressRuleNoJson
+	*newIngressRuleNoJSON
 }
 
-// NewRule is used to create a new rule.
+// NewIngressRule is used to create a new ingress rule.
 type NewIngressRule struct {
 	// The status of the rule. Rules can be enabled or disabled.
 	Status string `json:"status,omitempty"`
@@ -100,7 +104,7 @@ type NewIngressRule struct {
 
 func (r *NewIngressRule) MarshalJSON() ([]byte, error) {
 	raw := rawNewIngressRule{
-		RuleType: r.Target.TargetType(), NewIngressRuleNoJson: (*NewIngressRuleNoJson)(r)}
+		RuleType: r.Target.TargetType(), newIngressRuleNoJSON: (*newIngressRuleNoJSON)(r)}
 
 	return json.Marshal(&raw)
 }
@@ -121,16 +125,15 @@ type IngressMongoTarget struct {
 	FullDocumentBeforeChange string `json:"fullDocumentBeforeChange,omitempty"`
 	// The primary site.
 	PrimarySite string `json:"primarySite,omitempty"`
+	// The watch type for the MongoDB collection.
+	Watch string `json:"watch,omitempty"`
+	// The provisioned capacity for the ingress rule.
+	ProvisionedCapacity float64 `json:"provisionedCapacity,omitempty"`
 }
 
 // IngressMongoTarget implements the Target interface.
 func (s *IngressMongoTarget) TargetType() string {
 	return "ingress/mongodb"
-}
-
-// RuleType gets the type of target this rule has.
-func (r *IngressRule) RuleType() string {
-	return r.Target.TargetType()
 }
 
 type IngressPostgresOutboxTarget struct {
@@ -163,35 +166,35 @@ func (s *IngressPostgresOutboxTarget) TargetType() string {
 	return "ingress-postgres-outbox"
 }
 
-// Creates an Ingress rule for the application with the specified application ID.
+// CreateIngressRule creates an ingress rule for the application with the specified application ID.
 func (c *Client) CreateIngressRule(appID string, rule *NewIngressRule) (IngressRule, error) {
 	var out IngressRule
-	err := c.request("POST", "/apps/"+appID+"/rules", &rule, &out)
+	err := c.request("POST", "/apps/"+appID+"/rules", rule, &out)
 	return out, err
 }
 
-// Lists the rules for the application specified by the application ID.
+// IngressRules lists the ingress rules for the application specified by the application ID.
 func (c *Client) IngressRules(appID string) ([]IngressRule, error) {
 	var rules []IngressRule
 	err := c.request("GET", "/apps/"+appID+"/rules", nil, &rules)
 	return rules, err
 }
 
-// Returns the ingess rule specified by the rule ID, for the application specified by application ID.
+// IngressRule returns the ingress rule specified by the rule ID, for the application specified by application ID.
 func (c *Client) IngressRule(appID, ruleID string) (IngressRule, error) {
 	var rule IngressRule
 	err := c.request("GET", "/apps/"+appID+"/rules/"+ruleID, nil, &rule)
 	return rule, err
 }
 
-// Updates the rule specified by the rule ID, for the application specified by application ID.
+// UpdateIngressRule updates the ingress rule specified by the rule ID, for the application specified by application ID.
 func (c *Client) UpdateIngressRule(appID, ruleID string, rule *NewIngressRule) (IngressRule, error) {
 	var out IngressRule
-	err := c.request("PATCH", "/apps/"+appID+"/rules/"+ruleID, &rule, &out)
+	err := c.request("PATCH", "/apps/"+appID+"/rules/"+ruleID, rule, &out)
 	return out, err
 }
 
-// Deletes the rule specified by the rule ID, for the application specified by application ID.
+// DeleteIngressRule deletes the ingress rule specified by the rule ID, for the application specified by application ID.
 func (c *Client) DeleteIngressRule(appID, ruleID string) error {
 	err := c.request("DELETE", "/apps/"+appID+"/rules/"+ruleID, nil, nil)
 	return err
