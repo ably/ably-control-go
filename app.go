@@ -27,6 +27,17 @@ type NewApp struct {
 	ApnsPrivateKey string `json:"apnsPrivateKey"`
 	// Use the Apple Push Notification service sandbox endpoint.
 	ApnsUseSandboxEndpoint bool `json:"apnsUseSandboxEndpoint"`
+	// The APNs authentication type. Either "certificate" or "token".
+	ApnsAuthType *string `json:"apnsAuthType,omitempty"`
+	// The APNs signing key (.p8 file contents) for token-based authentication.
+	// Write-only: will not be populated by queries.
+	ApnsSigningKey *string `json:"apnsSigningKey,omitempty"`
+	// The 10-character Key ID for APNs token-based authentication.
+	ApnsSigningKeyId *string `json:"apnsSigningKeyId,omitempty"`
+	// The Team ID (issuer key) for APNs token-based authentication.
+	ApnsIssuerKey *string `json:"apnsIssuerKey,omitempty"`
+	// The bundle ID used as the APNs topic header.
+	ApnsTopicHeader *string `json:"apnsTopicHeader,omitempty"`
 }
 
 // A struct representing an Ably application.
@@ -48,6 +59,8 @@ type App struct {
 	FcmServiceAccount string `json:"fcmServiceAccount"`
 	// The Firebase Project ID. To authenticate with firebase you must also provide a service account key.
 	FcmProjectId string `json:"fcmProjectId"`
+	// Whether a Firebase service account key has been configured.
+	FcmServiceAccountConfigured bool `json:"fcmServiceAccountConfigured"`
 	// The Apple Push Notification service certificate.
 	// This field can only be used to set a new value,
 	// it will not be populated by queries.
@@ -58,6 +71,22 @@ type App struct {
 	ApnsPrivateKey string `json:"apnsPrivateKey"`
 	// Use the Apple Push Notification service sandbox endpoint.
 	ApnsUseSandboxEndpoint bool `json:"apnsUseSandboxEndpoint"`
+	// The APNs authentication type. Either "certificate" or "token".
+	ApnsAuthType *string `json:"apnsAuthType,omitempty"`
+	// Whether an APNs certificate has been configured.
+	ApnsCertificateConfigured bool `json:"apnsCertificateConfigured"`
+	// Whether an APNs signing key has been configured.
+	ApnsSigningKeyConfigured bool `json:"apnsSigningKeyConfigured"`
+	// The 10-character Key ID for APNs token-based authentication.
+	ApnsSigningKeyId *string `json:"apnsSigningKeyId,omitempty"`
+	// The Team ID (issuer key) for APNs token-based authentication.
+	ApnsIssuerKey *string `json:"apnsIssuerKey,omitempty"`
+	// The bundle ID used as the APNs topic header.
+	ApnsTopicHeader *string `json:"apnsTopicHeader,omitempty"`
+	// Unix timestamp representing the date and time of creation of the app.
+	Created int `json:"created"`
+	// Unix timestamp representing the date and time of last modification of the app.
+	Modified int `json:"modified"`
 }
 
 // Apps fetches a list of all your Ably apps.

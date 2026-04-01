@@ -76,6 +76,8 @@ type Rule struct {
 	// RequestMode. You can read more about the difference between single and batched
 	// events in the Ably documentation. https://ably.com/documentation/general/events#batching
 	RequestMode RequestMode `json:"requestMode,omitempty"`
+	// Controls when the rule is invoked relative to message publish.
+	InvocationMode InvocationMode `json:"invocationMode,omitempty"`
 	// The rule source.
 	Source Source `json:"source"`
 	// The rule target.
@@ -149,6 +151,34 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 		var t HttpTarget
 		err = json.Unmarshal(raw.Target, &t)
 		r.Target = &t
+	case "aws/lambda/before-publish":
+		var t AwsLambdaBeforePublishTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "http/before-publish":
+		var t HttpBeforePublishTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "hive/text-model-only":
+		var t HiveTextModelOnlyTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "hive/dashboard":
+		var t HiveDashboardTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "bodyguard/text-moderation":
+		var t BodyguardTextModerationTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "tisane/text-moderation":
+		var t TisaneTextModerationTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
+	case "azure/text-moderation":
+		var t AzureTextModerationTarget
+		err = json.Unmarshal(raw.Target, &t)
+		r.Target = &t
 	default:
 		return fmt.Errorf("unknown rule type \"%s\"", raw.RuleType)
 	}
@@ -164,27 +194,50 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 	r.Created = raw.Created
 	r.Modified = raw.Modified
 	r.RequestMode = raw.RequestMode
+	r.InvocationMode = raw.InvocationMode
 	r.Source = raw.Source
 
 	return nil
 }
 
 type rawRule struct {
-	ID          string          `json:"id,omitempty"`
-	AppID       string          `json:"appId,omitempty"`
-	Version     string          `json:"version,omitempty"`
-	Status      string          `json:"status,omitempty"`
-	Created     int             `json:"created"`
-	Modified    int             `json:"modified"`
-	RuleType    string          `json:"ruleType,omitempty"`
-	RequestMode RequestMode     `json:"requestMode,omitempty"`
-	Source      Source          `json:"source"`
-	Target      json.RawMessage `json:"target"`
+	ID             string          `json:"id,omitempty"`
+	AppID          string          `json:"appId,omitempty"`
+	Version        string          `json:"version,omitempty"`
+	Status         string          `json:"status,omitempty"`
+	Created        int             `json:"created"`
+	Modified       int             `json:"modified"`
+	RuleType       string          `json:"ruleType,omitempty"`
+	RequestMode    RequestMode     `json:"requestMode,omitempty"`
+	InvocationMode InvocationMode  `json:"invocationMode,omitempty"`
+	Source         Source          `json:"source"`
+	Target         json.RawMessage `json:"target"`
 }
 
 // RuleType gets the type of target this rule has.
 func (r *NewRule) RuleType() string {
 	return r.Target.TargetType()
+}
+
+// InvocationMode controls when a rule is invoked relative to message publish.
+type InvocationMode string
+
+// BeforePublish invokes the rule before a message is published.
+const BeforePublish InvocationMode = "BEFORE_PUBLISH"
+
+// AfterPublish invokes the rule after a message is published.
+const AfterPublish InvocationMode = "AFTER_PUBLISH"
+
+// BeforePublishConfig contains configuration for before-publish rules.
+type BeforePublishConfig struct {
+	// The timeout in milliseconds for retrying a failed invocation (0-10000).
+	RetryTimeout int `json:"retryTimeout"`
+	// The maximum number of retries for a failed invocation (0-10).
+	MaxRetries int `json:"maxRetries"`
+	// The action to take when the invocation fails. Either "REJECT" or "PUBLISH".
+	FailedAction string `json:"failedAction"`
+	// The action to take when rate limited. Either "RETRY" or "FAIL".
+	TooManyRequestsAction string `json:"tooManyRequestsAction"`
 }
 
 // Source controls how a rule gets data from channels.
@@ -194,6 +247,8 @@ type Source struct {
 	ChannelFilter string `json:"channelFilter"`
 	// Type controls the type of messages that are sent to the rule.
 	Type SourceType `json:"type,omitempty"`
+	// ChatRoomFilter allows you to filter based on a regex matched against the chat room ID.
+	ChatRoomFilter string `json:"chatRoomFilter,omitempty"`
 }
 
 // The Target interface is implemented by targets and
@@ -223,6 +278,8 @@ type NewRule struct {
 	// RequestMode. You can read more about the difference between single and batched
 	// events in the Ably documentation. https://ably.com/documentation/general/events#batching
 	RequestMode RequestMode `json:"requestMode,omitempty"`
+	// Controls when the rule is invoked relative to message publish.
+	InvocationMode InvocationMode `json:"invocationMode,omitempty"`
 	// The rule source.
 	Source Source `json:"source"`
 	// The rule target.
@@ -662,6 +719,125 @@ type HttpTarget struct {
 // HttpTarget implements the Target interface.
 func (s *HttpTarget) TargetType() string {
 	return "http"
+}
+
+// AwsLambdaBeforePublishTarget is the type used for aws/lambda/before-publish rules.
+type AwsLambdaBeforePublishTarget struct {
+	// The region in which your AWS Lambda Function is hosted.
+	Region string `json:"region,omitempty"`
+	// The name of your AWS Lambda Function.
+	FunctionName string `json:"functionName,omitempty"`
+	// Authentication details.
+	Authentication AwsAuthentication `json:"authentication"`
+	// Configuration for before-publish behavior.
+	BeforePublishConfig BeforePublishConfig `json:"beforePublishConfig"`
+}
+
+// AwsLambdaBeforePublishTarget implements the Target interface.
+func (s *AwsLambdaBeforePublishTarget) TargetType() string {
+	return "aws/lambda/before-publish"
+}
+
+// HttpBeforePublishTarget is the type used for http/before-publish rules.
+type HttpBeforePublishTarget struct {
+	// The webhook URL that Ably will POST events to.
+	Url string `json:"url,omitempty"`
+	// If you have additional information to send, you'll need to include the relevant headers.
+	Headers []Header `json:"headers,omitempty"`
+	// JSON provides a simpler text-based encoding, whereas MsgPack provides a more efficient binary encoding.
+	Format Format `json:"format,omitempty"`
+	// Configuration for before-publish behavior.
+	BeforePublishConfig BeforePublishConfig `json:"beforePublishConfig"`
+}
+
+// HttpBeforePublishTarget implements the Target interface.
+func (s *HttpBeforePublishTarget) TargetType() string {
+	return "http/before-publish"
+}
+
+// HiveTextModelOnlyTarget is the type used for hive/text-model-only rules.
+type HiveTextModelOnlyTarget struct {
+	// The Hive API key.
+	ApiKey string `json:"apiKey,omitempty"`
+	// The URL of the Hive text classification model.
+	ModelUrl string `json:"modelUrl,omitempty"`
+	// Thresholds for text classification categories (values 1-3).
+	Thresholds map[string]int `json:"thresholds,omitempty"`
+	// Configuration for before-publish behavior.
+	BeforePublishConfig BeforePublishConfig `json:"beforePublishConfig"`
+}
+
+// HiveTextModelOnlyTarget implements the Target interface.
+func (s *HiveTextModelOnlyTarget) TargetType() string {
+	return "hive/text-model-only"
+}
+
+// HiveDashboardTarget is the type used for hive/dashboard rules.
+type HiveDashboardTarget struct {
+	// The Hive API key.
+	ApiKey string `json:"apiKey,omitempty"`
+	// Whether to check watch lists.
+	CheckWatchLists *bool `json:"checkWatchLists,omitempty"`
+}
+
+// HiveDashboardTarget implements the Target interface.
+func (s *HiveDashboardTarget) TargetType() string {
+	return "hive/dashboard"
+}
+
+// BodyguardTextModerationTarget is the type used for bodyguard/text-moderation rules.
+type BodyguardTextModerationTarget struct {
+	// The Bodyguard API key.
+	ApiKey string `json:"apiKey,omitempty"`
+	// The Bodyguard channel ID.
+	ChannelId string `json:"channelId,omitempty"`
+	// The Bodyguard API URL.
+	ApiUrl string `json:"apiUrl,omitempty"`
+	// The default language for text moderation.
+	DefaultLanguage string `json:"defaultLanguage,omitempty"`
+	// Configuration for before-publish behavior.
+	BeforePublishConfig BeforePublishConfig `json:"beforePublishConfig"`
+}
+
+// BodyguardTextModerationTarget implements the Target interface.
+func (s *BodyguardTextModerationTarget) TargetType() string {
+	return "bodyguard/text-moderation"
+}
+
+// TisaneTextModerationTarget is the type used for tisane/text-moderation rules.
+type TisaneTextModerationTarget struct {
+	// The Tisane API key.
+	ApiKey string `json:"apiKey,omitempty"`
+	// The URL of the Tisane NLP model.
+	ModelUrl string `json:"modelUrl,omitempty"`
+	// Thresholds for text moderation categories (values 0-3).
+	Thresholds map[string]int `json:"thresholds,omitempty"`
+	// The default language for text moderation.
+	DefaultLanguage string `json:"defaultLanguage,omitempty"`
+	// Configuration for before-publish behavior.
+	BeforePublishConfig BeforePublishConfig `json:"beforePublishConfig"`
+}
+
+// TisaneTextModerationTarget implements the Target interface.
+func (s *TisaneTextModerationTarget) TargetType() string {
+	return "tisane/text-moderation"
+}
+
+// AzureTextModerationTarget is the type used for azure/text-moderation rules.
+type AzureTextModerationTarget struct {
+	// The Azure AI Content Safety API key.
+	ApiKey string `json:"apiKey,omitempty"`
+	// The Azure AI Content Safety endpoint URL.
+	Endpoint string `json:"endpoint,omitempty"`
+	// Thresholds for content safety categories (values 0-7).
+	Thresholds map[string]int `json:"thresholds,omitempty"`
+	// Configuration for before-publish behavior.
+	BeforePublishConfig BeforePublishConfig `json:"beforePublishConfig"`
+}
+
+// AzureTextModerationTarget implements the Target interface.
+func (s *AzureTextModerationTarget) TargetType() string {
+	return "azure/text-moderation"
 }
 
 // Lists the rules for the application specified by the application ID.

@@ -18,6 +18,8 @@ type Token struct {
 	Name string `json:"name"`
 	// The capabilities of the token.
 	Capabilities []string `json:"capabilities"`
+	// When the access token expires. Nil if the token does not expire.
+	ExpiresAt *string `json:"expires_at"`
 }
 
 // User associated with the used token and account.

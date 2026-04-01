@@ -43,6 +43,13 @@ type Namespace struct {
 	// The key used to determine which messages should be conflated. Messages
 	// with the same conflation key will be combined into a single message.
 	ConflationKey string `json:"conflationKey"`
+	// If true, enables update and delete operations on published messages.
+	MutableMessages bool `json:"mutableMessages"`
+	// If true, channels within this namespace will be included in the
+	// channel registry for enumeration.
+	PopulateChannelRegistry bool `json:"populateChannelRegistry"`
+	// The owning application ID. Only present in responses.
+	AppID string `json:"appId,omitempty"`
 }
 
 // Namespaces lists the namespaces for the specified application ID.
