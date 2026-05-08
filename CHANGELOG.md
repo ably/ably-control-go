@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.0](https://github.com/ably/ably-control-go/tree/v1.0.0)
+
+**NOTICE OF DEPRECATION**
+
+This repository is deprecated and will receive no further updates after this release. The library has moved to [`ably/terraform-provider-ably`](https://github.com/ably/terraform-provider-ably), where it is now maintained alongside its primary consumer, the Ably Terraform provider. Consolidating the two reduces duplicated maintenance and lets the client track changes to the Control API more closely.
+
+The new library is **not a drop-in replacement**. Parts of it have been rewritten to better reflect the current shape of the Control API, so the public API surface differs from this one. Consumers migrating across should expect to make code changes.
+
+**BREAKING CHANGES**
+
+- ErrorInfo.Details type changed from map[string][]string to map[string]interface{} to match actual API responses
+- IngressRule.RuleType() removed (use Target.TargetType() instead)
+
+[Full Changelog](https://github.com/ably/ably-control-go/compare/v0.8.0..v1.0.0)
+
+**Merged pull requests:**
+
+- Update the client to the latest API spec [\#41](https://github.com/ably/ably-control-go/pull/41) ([martin-ably](https://github.com/martin-ably))
+
 ## [0.8.0](https://github.com/ably/ably-control-go/tree/v0.8.0)
 
 [Full Changelog](https://github.com/ably/ably-control-go/compare/v0.7.0..v0.8.0)
